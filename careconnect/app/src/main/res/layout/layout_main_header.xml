@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 상단 헤더: 햄버거(좌) / 로고(중) / 로그인(우) -->
+<androidx.appcompat.widget.Toolbar
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:background="@color/green_primary"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
+
+    <!-- 햄버거 메뉴 버튼 (좌측) -->
+    <ImageButton
+        android:id="@+id/btnMenu"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_header_btn"
+        android:contentDescription="메뉴 열기"
+        android:src="@drawable/ic_menu"
+        app:tint="@color/white" />
+
+    <!-- 앱 타이틀 (중앙) -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="돌봄 커넥트"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="시흥시 긴급 돌봄 플랫폼"
+            android:textColor="#BDFFF0"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
+    <!-- 로그인 버튼 (우측) -->
+    <TextView
+        android:id="@+id/btnLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_gravity="end"
+        android:background="@drawable/bg_login_btn"
+        android:gravity="center"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="로그인"
+        android:textColor="@color/white"
+        android:textSize="13sp" />
+
+</androidx.appcompat.widget.Toolbar>

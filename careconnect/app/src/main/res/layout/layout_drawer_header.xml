@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 사이드 드로어 헤더: 초록 배경, 사용자 이름/역할 표시 -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/green_primary"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="48dp"
+    android:paddingBottom="20dp">
+
+    <!-- 프로필 아이콘 원 -->
+    <FrameLayout
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_avatar"
+        android:layout_marginBottom="12dp">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_person"
+            android:alpha="0.9" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tvDrawerUserName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="김보호자님"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvDrawerUserInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="시흥시 · 자녀 2명"
+        android:textColor="#BDFFF0"
+        android:textSize="12sp" />
+
+</LinearLayout>

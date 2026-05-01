@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_home"
+        android:title="홈"
+        android:checked="true" />
+
+    <item
+        android:id="@+id/nav_benefits"
+        android:icon="@drawable/ic_benefits"
+        android:title="맞춤 혜택" />
+
+    <item
+        android:id="@+id/nav_reserve"
+        android:icon="@drawable/ic_location"
+        android:title="예약 신청" />
+
+    <item
+        android:id="@+id/nav_status"
+        android:icon="@drawable/ic_calendar"
+        android:title="예약 현황" />
+
+    <item
+        android:id="@+id/nav_realtime"
+        android:icon="@drawable/ic_notification"
+        android:title="실시간 정보" />
+
+</menu>
