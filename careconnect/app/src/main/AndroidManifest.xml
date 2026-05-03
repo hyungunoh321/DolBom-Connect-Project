@@ -23,7 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity android:name=".benefits.BenefitsActivity" />
         <!-- 나중에 추가할 화면들 -->
         <!--
         <activity android:name=".benefits.BenefitsActivity" />
