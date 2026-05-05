@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import com.siheung.careconnect.R
 import com.siheung.careconnect.databinding.ActivityMainBinding
+import com.siheung.careconnect.reservation.ReservationActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,7 +34,7 @@ class MainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.nav_home -> { /* 현재 화면 */ }
                 //R.id.nav_benefits -> navigateTo(BenefitsActivity::class.java)
-                //R.id.nav_reserve -> navigateTo(ReservationActivity::class.java)
+                R.id.nav_reserve -> navigateTo(ReservationActivity::class.java)
                 //R.id.nav_status -> navigateTo(ReservationStatusActivity::class.java)
                 //R.id.nav_realtime -> navigateTo(RealtimeActivity::class.java)
             }
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
             //navigateTo(BenefitsActivity::class.java)
         }
         binding.layoutCards.cardReserve.setOnClickListener {
-            //navigateTo(ReservationActivity::class.java)
+            navigateTo(ReservationActivity::class.java)
         }
         binding.layoutCards.cardStatus.setOnClickListener {
             //navigateTo(ReservationStatusActivity::class.java)
