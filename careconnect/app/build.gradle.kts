@@ -2,6 +2,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android) // 이 줄을 추가하세요
 }
 
 // local.properties에서 키를 미리 읽어옴
@@ -41,9 +42,15 @@ android {
         }
     }
 
+    // ... 생략 ...
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    // 아래 3줄을 추가하세요
+    kotlinOptions {
+        jvmTarget = "11"
     }
 }
 
