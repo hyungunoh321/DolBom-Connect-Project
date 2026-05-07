@@ -2,9 +2,14 @@ package com.example.myapplication
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.databinding.ActivityLoginBinding
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
+import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -14,10 +19,11 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 로그인 버튼 클릭
         binding.btnLogin.setOnClickListener {
-            val email = binding.etEmail.text.toString().trim()
+            val email    = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
+
+            binding.tvLoginError.visibility = View.GONE
 
             when {
                 email.isEmpty() -> {
@@ -33,17 +39,46 @@ class LoginActivity : AppCompatActivity() {
                     binding.etPassword.requestFocus()
                 }
                 else -> {
-                    // TODO: Supabase Auth signIn(email, password) 연동
-                    // TODO: JWT role 필드 기반 메인 화면 분기 이동
-                    Toast.makeText(this, "로그인 성공 (임시)", Toast.LENGTH_SHORT).show()
+                    binding.btnLogin.isEnabled = false
+
+                    lifecycleScope.launch {
+                        try {
+                            SupabaseClientProvider.client.auth.signInWith(Email) {
+                                this.email    = email
+                                this.password = password
+                            }
+
+                            // 로그인 성공 → TODO: 메인 화면 이동
+                            Toast.makeText(this@LoginActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
+
+                        } catch (e: Exception) {
+                            val msg = e.message ?: ""
+                            when {
+                                msg.contains("Invalid login credentials") -> {
+                                    showError("존재하지 않는 이메일이거나 비밀번호가 잘못되었습니다.")
+                                }
+                                msg.contains("Email not confirmed") -> {
+                                    showError("이메일 인증이 필요합니다. 메일함을 확인해주세요.")
+                                }
+                                else -> {
+                                    showError("로그인에 실패했습니다. 다시 시도해주세요.")
+                                }
+                            }
+                        } finally {
+                            binding.btnLogin.isEnabled = true
+                        }
+                    }
                 }
             }
         }
 
-        // 회원가입 화면으로 이동
         binding.tvGoToSignUp.setOnClickListener {
-            val intent = Intent(this, SignUpActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, SignUpActivity::class.java))
         }
+    }
+
+    private fun showError(message: String) {
+        binding.tvLoginError.text       = message
+        binding.tvLoginError.visibility = View.VISIBLE
     }
 }
