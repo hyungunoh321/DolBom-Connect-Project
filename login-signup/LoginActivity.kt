@@ -16,20 +16,24 @@ class LoginActivity : AppCompatActivity() {
 
         // 로그인 버튼 클릭
         binding.btnLogin.setOnClickListener {
-            val username = binding.etUsername.text.toString().trim()
+            val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
             when {
-                username.isEmpty() -> {
-                    binding.etUsername.error = "아이디를 입력해주세요."
-                    binding.etUsername.requestFocus()
+                email.isEmpty() -> {
+                    binding.etEmail.error = "이메일을 입력해주세요."
+                    binding.etEmail.requestFocus()
+                }
+                !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
+                    binding.etEmail.error = "올바른 이메일 형식이 아닙니다."
+                    binding.etEmail.requestFocus()
                 }
                 password.isEmpty() -> {
                     binding.etPassword.error = "비밀번호를 입력해주세요."
                     binding.etPassword.requestFocus()
                 }
                 else -> {
-                    // TODO: Supabase Auth 로그인 API 연동 및 JWT 세션 저장
+                    // TODO: Supabase Auth signIn(email, password) 연동
                     // TODO: JWT role 필드 기반 메인 화면 분기 이동
                     Toast.makeText(this, "로그인 성공 (임시)", Toast.LENGTH_SHORT).show()
                 }

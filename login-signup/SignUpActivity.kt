@@ -34,16 +34,15 @@ class SignUpActivity : AppCompatActivity() {
         // 가입 완료 버튼 클릭
         binding.btnSignUp.setOnClickListener {
             if (validateForm()) {
-                val username   = binding.etUsername.text.toString().trim()
+                val email      = binding.etEmail.text.toString().trim()
                 val childName  = binding.etChildName.text.toString().trim()
                 val birthDate  = binding.etChildBirthDate.text.toString().trim()
                 val gender     = if (binding.rbMale.isChecked) "남아" else "여아"
                 val note       = binding.etChildNote.text.toString().trim()
 
-                // TODO: Supabase Auth 회원가입 API 연동
-                //       users 테이블 insert (username, hashed_password, role='보호자')
+                // TODO: Supabase Auth signUp(email, password) 연동
                 //       children 테이블 insert (name, birth_date, gender, note)
-                Toast.makeText(this, "회원가입 완료!\n$username 님 환영합니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "회원가입 완료!\n$email 님 환영합니다.", Toast.LENGTH_SHORT).show()
 
                 // 로그인 화면으로 복귀
                 val intent = Intent(this, LoginActivity::class.java)
@@ -61,22 +60,22 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun validateForm(): Boolean {
-        val username      = binding.etUsername.text.toString().trim()
+        val email         = binding.etEmail.text.toString().trim()
         val password      = binding.etPassword.text.toString().trim()
         val passwordConfirm = binding.etPasswordConfirm.text.toString().trim()
         val childName     = binding.etChildName.text.toString().trim()
         val birthDate     = binding.etChildBirthDate.text.toString().trim()
         val isGenderSelected = binding.rbMale.isChecked || binding.rbFemale.isChecked
 
-        // 아이디 검사
-        if (username.isEmpty()) {
-            binding.etUsername.error = "아이디를 입력해주세요."
-            binding.etUsername.requestFocus()
+        // 이메일 검사
+        if (email.isEmpty()) {
+            binding.etEmail.error = "이메일을 입력해주세요."
+            binding.etEmail.requestFocus()
             return false
         }
-        if (username.length < 4) {
-            binding.etUsername.error = "아이디는 4자 이상이어야 합니다."
-            binding.etUsername.requestFocus()
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.etEmail.error = "올바른 이메일 형식이 아닙니다."
+            binding.etEmail.requestFocus()
             return false
         }
 
