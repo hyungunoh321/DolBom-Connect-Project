@@ -20,19 +20,15 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnLogin.setOnClickListener {
-            val email    = binding.etEmail.text.toString().trim()
+            val username = binding.etUsername.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
             binding.tvLoginError.visibility = View.GONE
 
             when {
-                email.isEmpty() -> {
-                    binding.etEmail.error = "이메일을 입력해주세요."
-                    binding.etEmail.requestFocus()
-                }
-                !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
-                    binding.etEmail.error = "올바른 이메일 형식이 아닙니다."
-                    binding.etEmail.requestFocus()
+                username.isEmpty() -> {
+                    binding.etUsername.error = "아이디를 입력해주세요."
+                    binding.etUsername.requestFocus()
                 }
                 password.isEmpty() -> {
                     binding.etPassword.error = "비밀번호를 입력해주세요."
@@ -43,19 +39,24 @@ class LoginActivity : AppCompatActivity() {
 
                     lifecycleScope.launch {
                         try {
+                            // Supabase Auth는 이메일 기반 → users 테이블에서 username으로 email 조회 후 로그인
+                            // TODO: username → email 매핑 쿼리 추가 (현재는 임시로 username을 email로 사용)
                             SupabaseClientProvider.client.auth.signInWith(Email) {
-                                this.email    = email
+                                this.email    = username
                                 this.password = password
                             }
 
-                            // 로그인 성공 → TODO: 메인 화면 이동
+                            // 로그인 성공 → TODO: 역할(role) 확인 후 화면 분기
                             Toast.makeText(this@LoginActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
+                            // val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                            // startActivity(intent)
+                            // finish()
 
                         } catch (e: Exception) {
                             val msg = e.message ?: ""
                             when {
                                 msg.contains("Invalid login credentials") -> {
-                                    showError("존재하지 않는 이메일이거나 비밀번호가 잘못되었습니다.")
+                                    showError("아이디 또는 비밀번호가 잘못되었습니다.")
                                 }
                                 msg.contains("Email not confirmed") -> {
                                     showError("이메일 인증이 필요합니다. 메일함을 확인해주세요.")

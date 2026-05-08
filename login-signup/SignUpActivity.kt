@@ -29,31 +29,29 @@ class SignUpActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                val pw = binding.etPassword.text.toString()
+                val pw        = binding.etPassword.text.toString()
                 val pwConfirm = s.toString()
-                if (pwConfirm.isNotEmpty() && pw != pwConfirm) {
-                    binding.tvPasswordError.visibility = View.VISIBLE
-                } else {
-                    binding.tvPasswordError.visibility = View.GONE
-                }
+                binding.tvPasswordError.visibility =
+                    if (pwConfirm.isNotEmpty() && pw != pwConfirm) View.VISIBLE else View.GONE
             }
         })
 
-        // 가입 완료 버튼
+        // 입력완료 버튼
         binding.btnSignUp.setOnClickListener {
             if (validateForm()) {
-                val email     = binding.etEmail.text.toString().trim()
-                val password  = binding.etPassword.text.toString().trim()
-                val childName = binding.etChildName.text.toString().trim()
-                val birthDate = binding.etChildBirthDate.text.toString().trim()
-                val gender    = if (binding.rbMale.isChecked) "남아" else "여아"
-                val note      = binding.etChildNote.text.toString().trim()
+                val email       = binding.etEmail.text.toString().trim()
+                val password    = binding.etPassword.text.toString().trim()
+                val username    = binding.etUsername.text.toString().trim()
+                val childName   = binding.etChildName.text.toString().trim()
+                val birthDate   = binding.etChildBirthDate.text.toString().trim()
+                val gender      = if (binding.rbMale.isChecked) "남아" else "여아"
+                val incomeLevel = binding.etIncomeLevel.text.toString().trim().toIntOrNull()
 
                 binding.btnSignUp.isEnabled = false
 
                 lifecycleScope.launch {
                     try {
-                        // 1. Supabase Auth 회원가입
+                        // 1. Supabase Auth 회원가입 (이메일 기반)
                         SupabaseClientProvider.client.auth.signUpWith(Email) {
                             this.email    = email
                             this.password = password
@@ -62,16 +60,24 @@ class SignUpActivity : AppCompatActivity() {
                         // 2. 유저 ID 가져오기
                         val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: ""
 
-                        // 3. children 테이블에 자녀 정보 저장
-                        SupabaseClientProvider.client.postgrest["children"].insert(
+                        // 3. users 테이블에 추가 정보 저장 (username, role)
+                        SupabaseClientProvider.client.postgrest["users"].insert(
                             buildJsonObject {
-                                put("user_id",    userId)
-                                put("name",       childName)
-                                put("birth_date", birthDate)
-                                put("gender",     gender)
-                                put("note",       note)
+                                put("id",       userId)
+                                put("username", username)
+                                put("role",     "보호자")
                             }
                         )
+
+                        // 4. children 테이블에 자녀 정보 저장
+                        val childJson = buildJsonObject {
+                            put("parent_id",  userId)
+                            put("name",       childName)
+                            put("birth_date", birthDate)
+                            put("gender",     gender)
+                            if (incomeLevel != null) put("income_level", incomeLevel)
+                        }
+                        SupabaseClientProvider.client.postgrest["children"].insert(childJson)
 
                         Toast.makeText(
                             this@SignUpActivity,
@@ -106,20 +112,30 @@ class SignUpActivity : AppCompatActivity() {
             }
         }
 
-        // 상단 뒤로가기
-        binding.btnBack.setOnClickListener {
-            finish()
-        }
+        // 뒤로가기
+        binding.btnBack.setOnClickListener { finish() }
     }
 
     private fun validateForm(): Boolean {
+        val username        = binding.etUsername.text.toString().trim()
         val email           = binding.etEmail.text.toString().trim()
         val password        = binding.etPassword.text.toString().trim()
         val passwordConfirm = binding.etPasswordConfirm.text.toString().trim()
         val childName       = binding.etChildName.text.toString().trim()
         val birthDate       = binding.etChildBirthDate.text.toString().trim()
+        val incomeLevelStr  = binding.etIncomeLevel.text.toString().trim()
         val isGenderSelected = binding.rbMale.isChecked || binding.rbFemale.isChecked
 
+        if (username.isEmpty()) {
+            binding.etUsername.error = "아이디를 입력해주세요."
+            binding.etUsername.requestFocus()
+            return false
+        }
+        if (username.length < 4) {
+            binding.etUsername.error = "아이디는 4자 이상이어야 합니다."
+            binding.etUsername.requestFocus()
+            return false
+        }
         if (email.isEmpty()) {
             binding.etEmail.error = "이메일을 입력해주세요."
             binding.etEmail.requestFocus()
@@ -165,6 +181,14 @@ class SignUpActivity : AppCompatActivity() {
             binding.etChildBirthDate.requestFocus()
             return false
         }
+        if (incomeLevelStr.isNotEmpty()) {
+            val level = incomeLevelStr.toIntOrNull()
+            if (level == null || level < 1 || level > 10) {
+                binding.etIncomeLevel.error = "소득분위는 1~10 사이 숫자여야 합니다."
+                binding.etIncomeLevel.requestFocus()
+                return false
+            }
+        }
         if (!isGenderSelected) {
             Toast.makeText(this, "자녀 성별을 선택해주세요.", Toast.LENGTH_SHORT).show()
             return false
@@ -177,7 +201,6 @@ class SignUpActivity : AppCompatActivity() {
             Toast.makeText(this, "자녀 정보 수집·이용에 동의해주세요.", Toast.LENGTH_SHORT).show()
             return false
         }
-
         return true
     }
 }

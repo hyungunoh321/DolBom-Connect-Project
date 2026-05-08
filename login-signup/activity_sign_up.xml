@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
+    android:background="#F0F4FF"
     tools:context="com.example.myapplication.SignUpActivity">
 
     <LinearLayout
@@ -22,10 +22,9 @@
             android:layout_height="wrap_content"
             android:text="← 뒤로가기"
             android:textSize="14sp"
-            android:textColor="#1A73E8"
-            android:backgroundTint="@android:color/transparent"
-            android:layout_marginBottom="8dp"
-            style="@style/Widget.MaterialComponents.Button.TextButton"/>
+            android:textColor="#3D5AFE"
+            android:background="@android:color/transparent"
+            android:layout_marginBottom="8dp"/>
 
         <!-- 헤더 -->
         <TextView
@@ -34,7 +33,7 @@
             android:text="회원가입"
             android:textSize="26sp"
             android:textStyle="bold"
-            android:textColor="#1A73E8"
+            android:textColor="#3D5AFE"
             android:layout_marginBottom="4dp"/>
 
         <TextView
@@ -49,8 +48,8 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
@@ -66,6 +65,25 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#212121"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- 아이디 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="아이디"
+                    android:textSize="13sp"
+                    android:textColor="#616161"
+                    android:layout_marginBottom="6dp"/>
+
+                <EditText
+                    android:id="@+id/etUsername"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="아이디를 입력하세요 (영문, 숫자)"
+                    android:inputType="text"
+                    android:padding="14dp"
+                    android:textSize="15sp"
                     android:layout_marginBottom="16dp"/>
 
                 <!-- 이메일 -->
@@ -102,7 +120,6 @@
                     android:layout_height="wrap_content"
                     android:hint="비밀번호를 입력하세요 (8자 이상)"
                     android:inputType="textPassword"
-
                     android:padding="14dp"
                     android:textSize="15sp"
                     android:layout_marginBottom="16dp"/>
@@ -122,12 +139,10 @@
                     android:layout_height="wrap_content"
                     android:hint="비밀번호를 다시 입력하세요"
                     android:inputType="textPassword"
-
                     android:padding="14dp"
                     android:textSize="15sp"
                     android:layout_marginBottom="4dp"/>
 
-                <!-- 비밀번호 불일치 경고 -->
                 <TextView
                     android:id="@+id/tvPasswordError"
                     android:layout_width="wrap_content"
@@ -144,8 +159,8 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
@@ -178,7 +193,6 @@
                     android:layout_height="wrap_content"
                     android:hint="자녀 이름을 입력하세요"
                     android:inputType="textPersonName"
-
                     android:padding="14dp"
                     android:textSize="15sp"
                     android:layout_marginBottom="16dp"/>
@@ -198,7 +212,25 @@
                     android:layout_height="wrap_content"
                     android:hint="YYYY-MM-DD"
                     android:inputType="datetime"
+                    android:padding="14dp"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="16dp"/>
 
+                <!-- 소득분위 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="소득분위 (선택)"
+                    android:textSize="13sp"
+                    android:textColor="#616161"
+                    android:layout_marginBottom="6dp"/>
+
+                <EditText
+                    android:id="@+id/etIncomeLevel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="1~10 사이 숫자 입력 (맞춤형 혜택에 활용됩니다)"
+                    android:inputType="number"
                     android:padding="14dp"
                     android:textSize="15sp"
                     android:layout_marginBottom="16dp"/>
@@ -236,26 +268,7 @@
                         android:textColor="#212121"/>
                 </RadioGroup>
 
-                <!-- 알레르기 / 특이사항 -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="알레르기 및 특이사항 (선택)"
-                    android:textSize="13sp"
-                    android:textColor="#616161"
-                    android:layout_marginBottom="6dp"/>
 
-                <EditText
-                    android:id="@+id/etChildNote"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="알레르기, 지병, 특별히 주의할 사항 등"
-                    android:inputType="textMultiLine"
-                    android:minLines="3"
-                    android:gravity="top"
-
-                    android:padding="14dp"
-                    android:textSize="15sp"/>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -264,8 +277,8 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
             android:layout_marginBottom="24dp">
 
             <LinearLayout
@@ -303,25 +316,16 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- 하단 버튼: 뒤로가기 + 입력완료 -->
-        <LinearLayout
+        <!-- 입력완료 버튼 -->
+        <Button
+            android:id="@+id/btnSignUp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp">
-
-            <Button
-                android:id="@+id/btnSignUp"
-                android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_weight="1"
-                android:text="입력완료"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:background="#1A73E8"
-                android:textColor="#FFFFFF"/>
-
-        </LinearLayout>
+            android:layout_height="52dp"
+            android:text="입력완료"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="#3D5AFE"
+            android:textColor="#FFFFFF"/>
 
     </LinearLayout>
 </ScrollView>

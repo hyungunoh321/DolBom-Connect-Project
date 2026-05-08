@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
+    android:background="#F0F4FF"
     tools:context="com.example.myapplication.LoginActivity">
 
     <LinearLayout
@@ -13,18 +13,18 @@
         android:orientation="vertical"
         android:gravity="center"
         android:padding="28dp"
-        android:paddingTop="60dp"
+        android:paddingTop="72dp"
         android:paddingBottom="40dp">
 
-        <!-- 앱 로고 / 타이틀 -->
+        <!-- 로고 영역 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="돌봄 커넥트"
-            android:textSize="30sp"
+            android:textSize="32sp"
             android:textStyle="bold"
-            android:textColor="#1A73E8"
-            android:layout_marginBottom="6dp"/>
+            android:textColor="#3D5AFE"
+            android:layout_marginBottom="4dp"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -32,21 +32,30 @@
             android:text="Care-Connect"
             android:textSize="13sp"
             android:textColor="#9E9E9E"
-            android:layout_marginBottom="36dp"/>
+            android:letterSpacing="0.1"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="시흥시 긴급 돌봄 통합 플랫폼"
+            android:textSize="12sp"
+            android:textColor="#BDBDBD"
+            android:layout_marginBottom="40dp"/>
 
         <!-- 로그인 카드 -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            android:layout_marginBottom="16dp">
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
+            android:layout_marginBottom="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="28dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -55,28 +64,28 @@
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="#212121"
-                    android:layout_marginBottom="20dp"/>
+                    android:layout_marginBottom="24dp"/>
 
-                <!-- 이메일 입력 -->
+                <!-- 아이디 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="이메일"
+                    android:text="아이디"
                     android:textSize="13sp"
                     android:textColor="#616161"
                     android:layout_marginBottom="6dp"/>
 
                 <EditText
-                    android:id="@+id/etEmail"
+                    android:id="@+id/etUsername"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="이메일을 입력하세요"
-                    android:inputType="textEmailAddress"
+                    android:hint="아이디를 입력하세요"
+                    android:inputType="text"
                     android:padding="14dp"
                     android:textSize="15sp"
                     android:layout_marginBottom="16dp"/>
 
-                <!-- 비밀번호 입력 -->
+                <!-- 비밀번호 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -91,23 +100,19 @@
                     android:layout_height="wrap_content"
                     android:hint="비밀번호를 입력하세요"
                     android:inputType="textPassword"
-
                     android:padding="14dp"
                     android:textSize="15sp"
                     android:layout_marginBottom="4dp"/>
 
-                <!-- 로그인 에러 메시지 -->
+                <!-- 에러 메시지 -->
                 <TextView
                     android:id="@+id/tvLoginError"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#D32F2F"
                     android:textSize="13sp"
-                    android:layout_marginBottom="12dp"
+                    android:layout_marginBottom="8dp"
                     android:visibility="gone"/>
-
-
-
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -120,11 +125,11 @@
             android:text="로그인"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:background="#1A73E8"
+            android:background="#3D5AFE"
             android:textColor="#FFFFFF"
             android:layout_marginBottom="16dp"/>
 
-        <!-- 회원가입 이동 링크 -->
+        <!-- 회원가입 링크 -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -143,7 +148,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="회원가입"
-                android:textColor="#1A73E8"
+                android:textColor="#3D5AFE"
                 android:textStyle="bold"
                 android:textSize="14sp"/>
         </LinearLayout>
