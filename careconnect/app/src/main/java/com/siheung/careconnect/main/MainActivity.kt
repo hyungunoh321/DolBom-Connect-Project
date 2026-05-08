@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setupDrawer()
         setupMenuCards()
     }
@@ -27,6 +27,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupDrawer() {
         binding.layoutHeader.btnMenu.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+        binding.layoutHeader.btnLogin.setOnClickListener {
+            navigateTo(LoginActivity::class.java)
         }
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             binding.drawerLayout.closeDrawer(GravityCompat.START)

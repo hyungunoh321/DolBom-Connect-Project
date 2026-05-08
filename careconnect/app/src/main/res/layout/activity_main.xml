@@ -7,9 +7,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".main.MainActivity">
-    <include
-        android:id="@+id/layoutHeader"
-        layout="@layout/layout_main_header" />
+
+    <!-- ── 메인 콘텐츠 영역 (DrawerLayout 첫 번째 자식) ── -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -21,7 +20,9 @@
             android:background="@color/green_primary"
             app:elevation="0dp">
 
-            <include layout="@layout/layout_main_header" />
+            <include
+                android:id="@+id/layoutHeader"
+                layout="@layout/layout_main_header" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -59,6 +60,7 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
+    <!-- ── 드로어 (DrawerLayout 두 번째 자식) ── -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
         android:layout_width="260dp"

@@ -15,6 +15,15 @@
         android:padding="28dp"
         android:paddingTop="72dp"
         android:paddingBottom="40dp">
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="start"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_back"
+            android:contentDescription="뒤로가기"
+            android:layout_marginBottom="8dp" />
 
         <!-- 로고 영역 -->
         <TextView

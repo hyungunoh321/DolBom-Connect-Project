@@ -76,6 +76,9 @@ class LoginActivity : AppCompatActivity() {
         binding.tvGoToSignUp.setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
         }
+        binding.btnBack.setOnClickListener {
+            finish()
+        }
     }
 
     private fun showError(message: String) {
