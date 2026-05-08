@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.siheung.careconnect.databinding.ActivityLoginBinding
+import com.siheung.careconnect.main.MainActivity
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.launch
@@ -47,9 +48,9 @@ class LoginActivity : AppCompatActivity() {
 
                             // 로그인 성공 → TODO: 역할(role) 확인 후 화면 분기
                             Toast.makeText(this@LoginActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
-                            // val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                            // startActivity(intent)
-                            // finish()
+                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                            startActivity(intent)
+                            finish()
 
                         } catch (e: Exception) {
                             val msg = e.message ?: ""
