@@ -7,6 +7,7 @@ import androidx.core.view.GravityCompat
 import com.siheung.careconnect.R
 import com.siheung.careconnect.benefits.BenefitsActivity
 import com.siheung.careconnect.databinding.ActivityMainBinding
+import com.siheung.careconnect.reservation.ReservationActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,6 +32,9 @@ class MainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.nav_home -> { /* 현재 화면 */ }
                 R.id.nav_benefits -> navigateTo(BenefitsActivity::class.java)
+                R.id.nav_reserve -> navigateTo(ReservationActivity::class.java)
+                //R.id.nav_status -> navigateTo(ReservationStatusActivity::class.java)
+                //R.id.nav_realtime -> navigateTo(RealtimeActivity::class.java)
             }
             true
         }
@@ -41,10 +45,15 @@ class MainActivity : AppCompatActivity() {
         binding.layoutCards.cardBenefits.setOnClickListener {
             navigateTo(BenefitsActivity::class.java)
         }
-        // 나머지 카드는 추후 구현
-        binding.layoutCards.cardReserve.setOnClickListener { }
-        binding.layoutCards.cardStatus.setOnClickListener { }
-        binding.layoutCards.cardRealtime.setOnClickListener { }
+        binding.layoutCards.cardReserve.setOnClickListener {
+            navigateTo(ReservationActivity::class.java)
+        }
+        binding.layoutCards.cardStatus.setOnClickListener {
+            //navigateTo(ReservationStatusActivity::class.java)
+        }
+        binding.layoutCards.cardRealtime.setOnClickListener {
+            //navigateTo(RealtimeActivity::class.java)
+        }
     }
 
     // ── 화면 전환 헬퍼 ────────────────────────────────────────
