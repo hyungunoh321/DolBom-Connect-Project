@@ -3,7 +3,6 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     kotlin("plugin.serialization") version "1.9.0"
-
 }
 
 // local.properties에서 키를 미리 읽어옴

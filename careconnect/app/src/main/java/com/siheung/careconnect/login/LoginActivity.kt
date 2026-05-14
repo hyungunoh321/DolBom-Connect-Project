@@ -1,4 +1,5 @@
 package com.siheung.careconnect.login
+
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -6,10 +7,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.siheung.careconnect.databinding.ActivityLoginBinding
+import com.siheung.careconnect.facilityadmin.AdminMainActivity
 import com.siheung.careconnect.main.MainActivity
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -39,16 +45,42 @@ class LoginActivity : AppCompatActivity() {
 
                     lifecycleScope.launch {
                         try {
-                            // Supabase Auth는 이메일 기반 → users 테이블에서 username으로 email 조회 후 로그인
                             // TODO: username → email 매핑 쿼리 추가 (현재는 임시로 username을 email로 사용)
                             SupabaseClientProvider.client.auth.signInWith(Email) {
                                 this.email    = username
                                 this.password = password
                             }
 
-                            // 로그인 성공 → TODO: 역할(role) 확인 후 화면 분기
+                            // 로그인 성공 → users 테이블에서 role 조회
+                            // DB users 컬럼: id, username, password_hash, role, created_at
+                            val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: ""
+                            val userRow = SupabaseClientProvider.client.postgrest["users"]
+                                .select(Columns.raw("role")) {
+                                    filter { eq("id", userId) }
+                                }
+                                .decodeSingle<UserRow>()
+
                             Toast.makeText(this@LoginActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
-                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+
+                            val intent = when (userRow.role) {
+                                "보육원관리자" -> {
+                                    // facilities 테이블에서 manager_id로 facility_id 조회
+                                    // DB facilities 컬럼: id, name, address, latitude, longitude, capacity, manager_id, created_at
+                                    val facilityRow = SupabaseClientProvider.client.postgrest["facilities"]
+                                        .select(Columns.raw("id")) {
+                                            filter { eq("manager_id", userId) }
+                                        }
+                                        .decodeSingleOrNull<FacilityRow>()
+
+                                    Intent(this@LoginActivity, AdminMainActivity::class.java).apply {
+                                        putExtra("facility_id", facilityRow?.id ?: "")
+                                    }
+                                }
+                                // TODO: 시스템 관리자 화면 연결 (팀원 작업 완료 후 주석 해제)
+                                // "시스템관리자" -> Intent(this@LoginActivity, com.siheung.careconnect.system.SystemMainActivity::class.java)
+                                else -> Intent(this@LoginActivity, MainActivity::class.java)
+                            }
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
                             finish()
 
@@ -86,3 +118,15 @@ class LoginActivity : AppCompatActivity() {
         binding.tvLoginError.visibility = View.VISIBLE
     }
 }
+
+// DB users 테이블: role 조회용
+@Serializable
+private data class UserRow(
+    val role: String
+)
+
+// DB facilities 테이블: manager_id로 facility id 조회용
+@Serializable
+private data class FacilityRow(
+    val id: String
+)

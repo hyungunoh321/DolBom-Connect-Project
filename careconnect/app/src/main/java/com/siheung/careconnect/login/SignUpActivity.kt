@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.siheung.careconnect.databinding.ActivitySignUpBinding
-
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.postgrest
@@ -45,8 +44,9 @@ class SignUpActivity : AppCompatActivity() {
                 val username    = binding.etUsername.text.toString().trim()
                 val childName   = binding.etChildName.text.toString().trim()
                 val birthDate   = binding.etChildBirthDate.text.toString().trim()
-                val gender      = if (binding.rbMale.isChecked) "남아" else "여아"
                 val incomeLevel = binding.etIncomeLevel.text.toString().trim().toIntOrNull()
+                // TODO: DB children 테이블에 gender 컬럼 추가 후 아래 주석 해제
+                // val gender = if (binding.rbMale.isChecked) "남아" else "여아"
 
                 binding.btnSignUp.isEnabled = false
 
@@ -61,7 +61,8 @@ class SignUpActivity : AppCompatActivity() {
                         // 2. 유저 ID 가져오기
                         val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: ""
 
-                        // 3. users 테이블에 추가 정보 저장 (username, role)
+                        // 3. users 테이블에 추가 정보 저장
+                        // DB users 컬럼: id, username, password_hash, role, created_at
                         SupabaseClientProvider.client.postgrest["users"].insert(
                             buildJsonObject {
                                 put("id",       userId)
@@ -71,12 +72,14 @@ class SignUpActivity : AppCompatActivity() {
                         )
 
                         // 4. children 테이블에 자녀 정보 저장
+                        // DB children 컬럼: id, parent_id, name, birth_date, income_level
                         val childJson = buildJsonObject {
                             put("parent_id",  userId)
                             put("name",       childName)
                             put("birth_date", birthDate)
-                            put("gender",     gender)
                             if (incomeLevel != null) put("income_level", incomeLevel)
+                            // TODO: DB children 테이블에 gender 컬럼 추가 후 아래 주석 해제
+                            // put("gender", gender)
                         }
                         SupabaseClientProvider.client.postgrest["children"].insert(childJson)
 
@@ -113,7 +116,6 @@ class SignUpActivity : AppCompatActivity() {
             }
         }
 
-        // 뒤로가기
         binding.btnBack.setOnClickListener { finish() }
     }
 
@@ -125,7 +127,8 @@ class SignUpActivity : AppCompatActivity() {
         val childName       = binding.etChildName.text.toString().trim()
         val birthDate       = binding.etChildBirthDate.text.toString().trim()
         val incomeLevelStr  = binding.etIncomeLevel.text.toString().trim()
-        val isGenderSelected = binding.rbMale.isChecked || binding.rbFemale.isChecked
+        // TODO: DB children 테이블에 gender 컬럼 추가 후 아래 주석 해제
+        // val isGenderSelected = binding.rbMale.isChecked || binding.rbFemale.isChecked
 
         if (username.isEmpty()) {
             binding.etUsername.error = "아이디를 입력해주세요."
@@ -190,10 +193,11 @@ class SignUpActivity : AppCompatActivity() {
                 return false
             }
         }
-        if (!isGenderSelected) {
-            Toast.makeText(this, "자녀 성별을 선택해주세요.", Toast.LENGTH_SHORT).show()
-            return false
-        }
+        // TODO: DB children 테이블에 gender 컬럼 추가 후 아래 주석 해제
+        // if (!isGenderSelected) {
+        //     Toast.makeText(this, "자녀 성별을 선택해주세요.", Toast.LENGTH_SHORT).show()
+        //     return false
+        // }
         if (!binding.cbAgreement.isChecked) {
             Toast.makeText(this, "이용약관 및 개인정보 처리방침에 동의해주세요.", Toast.LENGTH_SHORT).show()
             return false

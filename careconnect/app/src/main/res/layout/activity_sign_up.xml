@@ -232,43 +232,7 @@
                     android:hint="1~10 사이 숫자 입력 (맞춤형 혜택에 활용됩니다)"
                     android:inputType="number"
                     android:padding="14dp"
-                    android:textSize="15sp"
-                    android:layout_marginBottom="16dp"/>
-
-                <!-- 자녀 성별 -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="자녀 성별"
-                    android:textSize="13sp"
-                    android:textColor="#616161"
-                    android:layout_marginBottom="8dp"/>
-
-                <RadioGroup
-                    android:id="@+id/rgChildGender"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="16dp">
-
-                    <RadioButton
-                        android:id="@+id/rbMale"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="남아"
-                        android:textColor="#212121"/>
-
-                    <RadioButton
-                        android:id="@+id/rbFemale"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="여아"
-                        android:textColor="#212121"/>
-                </RadioGroup>
-
-
+                    android:textSize="15sp"/>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
