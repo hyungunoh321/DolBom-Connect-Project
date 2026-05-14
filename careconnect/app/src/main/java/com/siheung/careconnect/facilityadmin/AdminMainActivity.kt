@@ -1,21 +1,35 @@
 package com.siheung.careconnect.facilityadmin
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.siheung.careconnect.R
+import android.content.Intent
+import com.siheung.careconnect.databinding.ActivityAdminMainBinding
 
 class AdminMainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityAdminMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_admin_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        binding = ActivityAdminMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setupToolbar()
+        setupMenuCards()
+    }
+
+    // ── 툴바 (뒤로가기) ──────────────────────────────────────
+    private fun setupToolbar() {
+        binding.btnBack.setOnClickListener { finish() }
+    }
+
+    // ── 2개 메뉴 카드 클릭 이벤트 ────────────────────────────
+    private fun setupMenuCards() {
+        binding.cardSchedule.setOnClickListener {
+            startActivity(Intent(this, AdminScheduleActivity::class.java))
+        }
+        binding.cardReservation.setOnClickListener {
+            startActivity(Intent(this, AdminReservationActivity::class.java))
         }
     }
 }
