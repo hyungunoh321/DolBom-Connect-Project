@@ -3,7 +3,6 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     kotlin("plugin.serialization") version "1.9.0"
-
 }
 
 // local.properties에서 키를 미리 읽어옴
@@ -71,6 +70,12 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:auth-kt")
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
 
-// Ktor
+    // Ktor
     implementation("io.ktor:ktor-client-android:3.0.0")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }

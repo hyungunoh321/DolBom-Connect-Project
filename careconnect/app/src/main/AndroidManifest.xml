@@ -28,6 +28,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".benefits.BenefitsActivity" />
+        <activity android:name=".admin.SystemAdminActivity" />
 
         <activity android:name=".reservation.ReservationActivity" />
         <activity android:name=".login.LoginActivity" />
