@@ -52,14 +52,14 @@ class SignUpActivity : AppCompatActivity() {
 
                 lifecycleScope.launch {
                     try {
-                        // 1. Supabase Auth 회원가입 (이메일 기반)
-                        SupabaseClientProvider.client.auth.signUpWith(Email) {
+                        // 1. Supabase Auth 회원가입
+                        val user = SupabaseClientProvider.client.auth.signUpWith(Email) {
                             this.email    = email
                             this.password = password
                         }
 
-                        // 2. 유저 ID 가져오기
-                        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: ""
+                        // 2. 유저 ID 가져오기 (인증 전이므로 signUpWith 반환값에서 직접 추출)
+                        val userId = user?.id ?: ""
 
                         // 3. users 테이블에 추가 정보 저장
                         // DB users 컬럼: id, username, password_hash, role, created_at
@@ -104,7 +104,7 @@ class SignUpActivity : AppCompatActivity() {
                             else -> {
                                 Toast.makeText(
                                     this@SignUpActivity,
-                                    "회원가입 실패: 다시 시도해주세요.",
+                                    "오류: ${e.message}",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }

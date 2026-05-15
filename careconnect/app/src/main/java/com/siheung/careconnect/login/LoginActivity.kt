@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.siheung.careconnect.databinding.ActivityLoginBinding
 import com.siheung.careconnect.facilityadmin.AdminMainActivity
 import com.siheung.careconnect.main.MainActivity
+import com.siheung.careconnect.systemadmin.SystemAdminActivity
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.postgrest
@@ -77,7 +78,7 @@ class LoginActivity : AppCompatActivity() {
                                     }
                                 }
                                 // TODO: 시스템 관리자 화면 연결 (팀원 작업 완료 후 주석 해제)
-                                // "시스템관리자" -> Intent(this@LoginActivity, com.siheung.careconnect.system.SystemMainActivity::class.java)
+                                "시스템관리자" -> Intent(this@LoginActivity, SystemAdminActivity::class.java)
                                 else -> Intent(this@LoginActivity, MainActivity::class.java)
                             }
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
