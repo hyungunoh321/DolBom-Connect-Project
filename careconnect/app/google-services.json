@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1067169648372",
+    "project_id": "dolbomconnect",
+    "storage_bucket": "dolbomconnect.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067169648372:android:bc2ec9db9eedb59ccf98a1",
+        "android_client_info": {
+          "package_name": "com.siheung.careconnect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBijGfiVxt1zSfAwiO5u3OgLoEg6t5l2hY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

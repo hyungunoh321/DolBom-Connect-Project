@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     kotlin("plugin.serialization") version "1.9.0"
+    id("com.google.gms.google-services")
 
 }
 
@@ -27,10 +28,15 @@ android {
 
         // 읽어온 키가 있으면 설정하고, 없으면 빈 값으로 설정하여 빌드 에러 방지
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = localProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: ""
+
+        buildConfigField("String", "SUPABASE_ANON_KEY",
+            "\"${localProperties.getProperty("SUPABASE_ANON_KEY") ?: ""}\"")
+
     }
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     buildTypes {
@@ -73,4 +79,13 @@ dependencies {
 
 // Ktor
     implementation("io.ktor:ktor-client-android:3.0.0")
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+
+    implementation("io.github.jan-tennert.supabase:functions-kt")
+
+
+
 }
