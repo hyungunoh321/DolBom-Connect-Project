@@ -7,13 +7,15 @@ import com.google.maps.android.clustering.ClusterItem
  * 보육기관 데이터 모델
  */
 data class ChildcareFacility(
-    val id: String,
+    val id: String,          // Supabase facilities.id (UUID)
     val name: String,
     val address: String,
     val latitude: Double,
     val longitude: Double,
-    val status: String = "대기 중",
-    var distance: Float = 0f // 현재 위치로부터의 거리 (meters)
+    val phone: String = "",
+    val district: String = "",   // 행정구역 필터용
+    val status: String = "예약 가능",
+    var distance: Float = 0f
 ) : ClusterItem {
 
     override fun getPosition(): LatLng = LatLng(latitude, longitude)
