@@ -9,13 +9,12 @@ import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
-import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -30,6 +29,12 @@ import com.google.android.material.chip.ChipGroup
 import com.google.maps.android.clustering.ClusterManager
 import com.siheung.careconnect.R
 import com.siheung.careconnect.databinding.ActivityReservationBinding
+import com.siheung.careconnect.login.SupabaseClientProvider
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -42,21 +47,7 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val siheungCenter = LatLng(37.3802, 126.8028)
     private var lastKnownLocation: Location? = null
-
-    private val sampleFacilities = mutableListOf(
-        ChildcareFacility("fac-001", "시흥시청 어린이집", "시흥시 시청로 20",
-            37.3802, 126.8028, phone = "031-310-2000", district = "신천"),
-        ChildcareFacility("fac-002", "정왕 어린이집", "시흥시 정왕대로 233",
-            37.3444, 126.7317, phone = "031-310-3000", district = "정왕"),
-        ChildcareFacility("fac-003", "배곧 어린이집", "시흥시 배곧3로 80",
-            37.3711, 126.7214, phone = "031-310-4000", district = "배곧"),
-        ChildcareFacility("fac-004", "능곡 어린이집", "시흥시 능곡로 45",
-            37.3789, 126.8145, phone = "031-310-5000", district = "신천"),
-        ChildcareFacility("fac-005", "목감 어린이집", "시흥시 목감중앙로 20",
-            37.3828, 126.8778, phone = "031-310-6000", district = "목감"),
-        ChildcareFacility("fac-006", "은계 어린이집", "시흥시 은계중앙로 30",
-            37.4422, 126.8228, phone = "031-310-7000", district = "은계")
-    )
+    private val facilities = mutableListOf<ChildcareFacility>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +63,42 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
         setupUI()
         setupRecyclerView()
         setupFilterChips()
-        updateResultCount(sampleFacilities.size)
+        updateResultCount(0)
+        loadFacilities()
+    }
+
+    private fun loadFacilities() {
+        lifecycleScope.launch {
+            try {
+                val loaded = withContext(Dispatchers.IO) {
+                    SupabaseClientProvider.client.postgrest["facilities"]
+                        .select()
+                        .decodeList<ChildcareFacility>()
+                }
+                loaded.forEach { it.district = deriveDistrict(it.address) }
+                facilities.clear()
+                facilities.addAll(loaded)
+                facilityAdapter.updateItems(facilities)
+                updateResultCount(facilities.size)
+                if (::clusterManager.isInitialized) {
+                    clusterManager.clearItems()
+                    clusterManager.addItems(facilities)
+                    clusterManager.cluster()
+                }
+                lastKnownLocation?.let { sortAndDisplayFacilities(it) }
+            } catch (e: Exception) {
+                Log.e("ReservationActivity", "시설 조회 실패: ${e.message}")
+                Toast.makeText(this@ReservationActivity, "시설 정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun deriveDistrict(address: String): String = when {
+        "정왕" in address -> "정왕"
+        "배곧" in address -> "배곧"
+        "목감" in address -> "목감"
+        "은계" in address -> "은계"
+        else -> "신천"
     }
 
     private fun setupUI() {
@@ -114,16 +140,14 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
             val chipText = group.findViewById<Chip>(checkedIds[0])?.text?.toString() ?: "전체"
             applyDistrictFilter(chipText)
         }
-        // 돌봄서비스·대상연령 칩은 향후 Supabase 필터링 시 연동
     }
 
     private fun applyDistrictFilter(district: String) {
-        val filtered = if (district == "전체") sampleFacilities.toList()
-                       else sampleFacilities.filter { it.district == district }
+        val filtered = if (district == "전체") facilities.toList()
+                       else facilities.filter { it.district == district }
         facilityAdapter.updateItems(filtered)
         updateResultCount(filtered.size)
 
-        // 지도 클러스터도 갱신
         if (::clusterManager.isInitialized) {
             clusterManager.clearItems()
             clusterManager.addItems(filtered)
@@ -148,7 +172,7 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
             cal.get(Calendar.MONTH),
             cal.get(Calendar.DAY_OF_MONTH)
         ).apply {
-            datePicker.minDate = cal.timeInMillis  // 과거 날짜 선택 불가
+            datePicker.minDate = cal.timeInMillis
         }.show()
     }
 
@@ -203,30 +227,38 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
         dialog.findViewById<TextView>(R.id.tvReservedAt).text =
             "${year}년 ${month}월 ${day}일  $time"
 
-        // 자녀 선택 스피너 — 추후 Supabase children 테이블 조회로 교체
-        val childNames = listOf("첫째 아이", "둘째 아이", "셋째 아이")
-        val spinner = dialog.findViewById<Spinner>(R.id.spinnerChild)
-        spinner.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            childNames
-        )
-
         dialog.findViewById<Button>(R.id.btnCancel).setOnClickListener {
             dialog.dismiss()
         }
 
-        dialog.findViewById<Button>(R.id.btnConfirm).setOnClickListener {
-            val selectedChildIndex = spinner.selectedItemPosition
-            // TODO: 실제 child_id는 Supabase children 테이블에서 조회 후 할당
-            val request = ReservationRequest(
-                facility_id = facility.id,
-                child_id = "child-uuid-placeholder-$selectedChildIndex",
-                reserved_at = reservedAt
-            )
-            Log.d("ReservationRequest", "request=$request")
-            Toast.makeText(this, "예약이 완료되었습니다 (대기)", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
+        val btnConfirm = dialog.findViewById<Button>(R.id.btnConfirm)
+        btnConfirm.setOnClickListener {
+            val parentId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id
+            if (parentId == null) {
+                Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            btnConfirm.isEnabled = false
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        SupabaseClientProvider.client.postgrest["reservations"].insert(
+                            ReservationRequest(
+                                parent_id = parentId,
+                                facility_id = facility.id,
+                                reserved_at = reservedAt
+                            )
+                        )
+                    }
+                    Toast.makeText(this@ReservationActivity, "예약이 완료되었습니다 (대기)", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                } catch (e: Exception) {
+                    Log.e("ReservationActivity", "예약 실패: ${e.message}")
+                    Toast.makeText(this@ReservationActivity, "예약에 실패했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    btnConfirm.isEnabled = true
+                }
+            }
         }
 
         dialog.show()
@@ -246,7 +278,7 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
         clusterManager = ClusterManager(this, mMap)
         mMap.setOnCameraIdleListener(clusterManager)
         mMap.setOnMarkerClickListener(clusterManager)
-        clusterManager.addItems(sampleFacilities)
+        clusterManager.addItems(facilities)
         clusterManager.cluster()
 
         clusterManager.setOnClusterItemClickListener { item ->
@@ -278,14 +310,14 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun sortAndDisplayFacilities(currentLocation: Location) {
-        sampleFacilities.forEach { facility ->
+        facilities.forEach { facility ->
             val dest = Location("").apply {
                 latitude = facility.latitude
                 longitude = facility.longitude
             }
             facility.distance = currentLocation.distanceTo(dest)
         }
-        val sorted = sampleFacilities.sortedBy { it.distance }
+        val sorted = facilities.sortedBy { it.distance }
         facilityAdapter.updateItems(sorted)
     }
 

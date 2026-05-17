@@ -17,3 +17,5 @@ local.properties
 # Claude Code
 CLAUDE.md
 docs/
+.claude
+
