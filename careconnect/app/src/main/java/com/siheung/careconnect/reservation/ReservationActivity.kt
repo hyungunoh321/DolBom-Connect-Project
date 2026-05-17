@@ -75,7 +75,6 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
                         .select()
                         .decodeList<ChildcareFacility>()
                 }
-                loaded.forEach { it.district = deriveDistrict(it.address) }
                 facilities.clear()
                 facilities.addAll(loaded)
                 facilityAdapter.updateItems(facilities)
@@ -91,30 +90,6 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
                 Toast.makeText(this@ReservationActivity, "시설 정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun deriveDistrict(address: String): String = when {
-        "정왕본동" in address -> "정왕본동"
-        "정왕1동"  in address -> "정왕1동"
-        "정왕2동"  in address -> "정왕2동"
-        "정왕3동"  in address -> "정왕3동"
-        "정왕4동"  in address -> "정왕4동"
-        "배곤1동"  in address || "배곧1동" in address -> "배곤1동"
-        "배곤2동"  in address || "배곧2동" in address -> "배곤2동"
-        "대야동"   in address -> "대야동"
-        "신현동"   in address -> "신현동"
-        "신천동"   in address -> "신천동"
-        "은행동"   in address -> "은행동"
-        "매화동"   in address -> "매화동"
-        "목감동"   in address -> "목감동"
-        "군자동"   in address -> "군자동"
-        "과림동"   in address -> "과림동"
-        "연성동"   in address -> "연성동"
-        "능곡동"   in address -> "능곡동"
-        "월곳동"   in address -> "월곳동"
-        "장곡동"   in address -> "장곡동"
-        "거북섬동" in address -> "거북섬동"
-        else -> "신천동"
     }
 
     private fun setupUI() {

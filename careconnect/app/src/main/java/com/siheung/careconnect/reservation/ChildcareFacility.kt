@@ -12,8 +12,8 @@ data class ChildcareFacility(
     val address: String,
     val latitude: Double,
     val longitude: Double,
+    val district: String = "",
     @Transient var phone: String = "",
-    @Transient var district: String = "",
     @Transient val status: String = "예약 가능",
     @Transient var distance: Float = 0f
 ) : ClusterItem {
