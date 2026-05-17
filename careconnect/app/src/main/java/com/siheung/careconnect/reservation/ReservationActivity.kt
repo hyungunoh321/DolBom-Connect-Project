@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.Dialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -116,7 +117,13 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
                     BottomSheetBehavior.STATE_COLLAPSED
             },
             onReserveClick = { facility ->
-                showDatePicker(facility)
+                val intent = Intent(this@ReservationActivity, BookingActivity::class.java).apply {
+                    putExtra(BookingActivity.EXTRA_FACILITY_ID, facility.id)
+                    putExtra(BookingActivity.EXTRA_FACILITY_NAME, facility.name)
+                    putExtra(BookingActivity.EXTRA_FACILITY_ADDRESS, facility.address)
+                    putExtra(BookingActivity.EXTRA_FACILITY_DISTRICT, facility.district)
+                }
+                startActivity(intent)
             }
         )
         binding.rvFacilities.apply {
