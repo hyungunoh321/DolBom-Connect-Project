@@ -94,11 +94,27 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun deriveDistrict(address: String): String = when {
-        "정왕" in address -> "정왕"
-        "배곧" in address -> "배곧"
-        "목감" in address -> "목감"
-        "은계" in address -> "은계"
-        else -> "신천"
+        "정왕본동" in address -> "정왕본동"
+        "정왕1동"  in address -> "정왕1동"
+        "정왕2동"  in address -> "정왕2동"
+        "정왕3동"  in address -> "정왕3동"
+        "정왕4동"  in address -> "정왕4동"
+        "배곤1동"  in address || "배곧1동" in address -> "배곤1동"
+        "배곤2동"  in address || "배곧2동" in address -> "배곤2동"
+        "대야동"   in address -> "대야동"
+        "신현동"   in address -> "신현동"
+        "신천동"   in address -> "신천동"
+        "은행동"   in address -> "은행동"
+        "매화동"   in address -> "매화동"
+        "목감동"   in address -> "목감동"
+        "군자동"   in address -> "군자동"
+        "과림동"   in address -> "과림동"
+        "연성동"   in address -> "연성동"
+        "능곡동"   in address -> "능곡동"
+        "월곳동"   in address -> "월곳동"
+        "장곡동"   in address -> "장곡동"
+        "거북섬동" in address -> "거북섬동"
+        else -> "신천동"
     }
 
     private fun setupUI() {
