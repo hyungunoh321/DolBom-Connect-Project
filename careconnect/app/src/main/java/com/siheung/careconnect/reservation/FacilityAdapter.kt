@@ -52,4 +52,13 @@ class FacilityAdapter(
         items = newItems
         notifyDataSetChanged()
     }
+
+    fun moveToTop(facilityId: String) {
+        val idx = items.indexOfFirst { it.id == facilityId }
+        if (idx <= 0) return
+        val reordered = items.toMutableList()
+        reordered.add(0, reordered.removeAt(idx))
+        items = reordered
+        notifyDataSetChanged()
+    }
 }

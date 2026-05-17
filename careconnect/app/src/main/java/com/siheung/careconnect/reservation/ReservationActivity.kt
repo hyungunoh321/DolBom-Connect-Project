@@ -276,6 +276,19 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(item.position, 16f))
             false
         }
+
+        clusterManager.markerCollection.setOnInfoWindowClickListener { marker ->
+            val facility = facilities.find { it.name == marker.title }
+                ?: return@setOnInfoWindowClickListener
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 16f))
+            scrollToFacility(facility)
+        }
+    }
+
+    private fun scrollToFacility(facility: ChildcareFacility) {
+        facilityAdapter.moveToTop(facility.id)
+        (binding.rvFacilities.layoutManager as LinearLayoutManager)
+            .scrollToPositionWithOffset(0, 0)
     }
 
     @SuppressLint("MissingPermission")
