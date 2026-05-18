@@ -46,9 +46,21 @@ class LoginActivity : AppCompatActivity() {
 
                     lifecycleScope.launch {
                         try {
-                            // TODO: username → email 매핑 쿼리 추가 (현재는 임시로 username을 email로 사용)
+                            // users 테이블에서 username으로 email 조회
+                            val emailRow = SupabaseClientProvider.client.postgrest["users"]
+                                .select(Columns.raw("email")) {
+                                    filter { eq("username", username) }
+                                }
+                                .decodeSingleOrNull<EmailRow>()
+
+                            if (emailRow == null) {
+                                showError("아이디 또는 비밀번호가 잘못되었습니다.")
+                                binding.btnLogin.isEnabled = true
+                                return@launch
+                            }
+
                             SupabaseClientProvider.client.auth.signInWith(Email) {
-                                this.email    = username
+                                this.email    = emailRow.email
                                 this.password = password
                             }
 
@@ -119,6 +131,12 @@ class LoginActivity : AppCompatActivity() {
         binding.tvLoginError.visibility = View.VISIBLE
     }
 }
+
+// DB users 테이블: email 조회용
+@Serializable
+private data class EmailRow(
+    val email: String
+)
 
 // DB users 테이블: role 조회용
 @Serializable
