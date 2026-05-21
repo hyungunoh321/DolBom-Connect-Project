@@ -31,11 +31,11 @@
         <activity android:name=".reservation.ReservationActivity" />
         <activity android:name=".login.LoginActivity" />
         <activity android:name=".login.SignUpActivity" />
+        <activity android:name=".realtime.RealtimeActivity" />
+
         <!-- 나중에 추가할 화면들 -->
         <!--
-        <activity android:name=".benefits.BenefitsActivity" />
         <activity android:name=".reservationStatus.ReservationStatusActivity" />
-        <activity android:name=".realtime.RealtimeActivity" />
         -->
 
         <meta-data
