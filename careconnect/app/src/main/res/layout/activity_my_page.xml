@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_secondary">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/green_primary"
+        app:elevation="0dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="16dp">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_header_btn"
+                android:contentDescription="뒤로가기"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/white" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="마이페이지"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_admin_card"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:id="@+id/tvProfileName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="보호자님"
+                    android:textColor="@color/text_primary"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvProfileInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="자녀 0명 · 소득분위 미등록"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvProfileEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_admin_card"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="비밀번호 변경"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etNewPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_info_box"
+                    android:hint="새 비밀번호"
+                    android:inputType="textPassword"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/etNewPasswordConfirm"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_info_box"
+                    android:hint="새 비밀번호 확인"
+                    android:inputType="textPassword"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btnChangePassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_btn_primary"
+                    android:text="비밀번호 변경"
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_admin_card"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="아이 정보"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etChildName"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_info_box"
+                    android:hint="아이 이름"
+                    android:inputType="textPersonName"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/etChildBirthDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_info_box"
+                    android:hint="생년월일 YYYY-MM-DD"
+                    android:inputType="date"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/etIncomeLevel"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_info_box"
+                    android:hint="소득분위 1~10"
+                    android:inputType="number"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btnSaveChild"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_btn_primary"
+                    android:text="아이 정보 저장"
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="14dp"
+                android:layout_marginBottom="24dp"
+                android:backgroundTint="@color/red_primary"
+                android:text="로그아웃"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
