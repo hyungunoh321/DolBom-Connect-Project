@@ -11,12 +11,15 @@ import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.RealtimeChannel
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
+import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
@@ -101,7 +104,7 @@ class RealtimeActivity : AppCompatActivity() {
         channel.postgresChangeFlow<PostgresAction.Insert>(schema = "public") {
             table = "notices"
         }.onEach { action ->
-            val notice = action.decodeRecord<Notice>()
+            val notice = Json.decodeFromJsonElement<Notice>(action.record)
             withContext(Dispatchers.Main) {
                 notices.add(0, notice)
                 adapter.notifyItemInserted(0)
@@ -114,7 +117,7 @@ class RealtimeActivity : AppCompatActivity() {
         channel.postgresChangeFlow<PostgresAction.Update>(schema = "public") {
             table = "notices"
         }.onEach { action ->
-            val updated = action.decodeRecord<Notice>()
+            val updated = Json.decodeFromJsonElement<Notice>(action.record)
             withContext(Dispatchers.Main) {
                 val index = notices.indexOfFirst { it.id == updated.id }
                 if (index >= 0) {
@@ -159,7 +162,7 @@ class RealtimeActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 channel.unsubscribe()
-                supabase.removeChannel(channel)
+                supabase.realtime.removeChannel(channel)
             } catch (_: Exception) { }
         }
     }
