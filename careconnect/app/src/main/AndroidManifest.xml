@@ -31,6 +31,7 @@
 
         <activity android:name=".reservation.ReservationActivity" />
         <activity android:name=".reservation.BookingActivity" />
+        <activity android:name=".reservation.ReservationStatusActivity" />
         <activity android:name=".login.LoginActivity" />
         <activity android:name=".login.SignUpActivity" />
         <!-- 나중에 추가할 화면들 -->
