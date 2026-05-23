@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/bg_secondary">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
+
+        <!-- Step Indicator -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:background="@color/white">
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="32dp" android:layout_height="32dp" android:text="✓" android:gravity="center" android:textColor="@color/white" android:textSize="14sp" android:textStyle="bold" android:background="@drawable/bg_step_active" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="센터선택" android:textSize="10sp" android:textColor="@color/green_primary" android:layout_marginTop="4dp" />
+            </LinearLayout>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/green_primary" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="32dp" android:layout_height="32dp" android:text="✓" android:gravity="center" android:textColor="@color/white" android:textSize="14sp" android:textStyle="bold" android:background="@drawable/bg_step_active" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="신청자/아동" android:textSize="10sp" android:textColor="@color/green_primary" android:layout_marginTop="4dp" />
+            </LinearLayout>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/green_primary" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="32dp" android:layout_height="32dp" android:text="✓" android:gravity="center" android:textColor="@color/white" android:textSize="14sp" android:textStyle="bold" android:background="@drawable/bg_step_active" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="기본정보" android:textSize="10sp" android:textColor="@color/green_primary" android:layout_marginTop="4dp" />
+            </LinearLayout>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/green_primary" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="32dp" android:layout_height="32dp" android:text="4" android:gravity="center" android:textColor="@color/white" android:textSize="14sp" android:textStyle="bold" android:background="@drawable/bg_step_active" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="추가정보" android:textSize="10sp" android:textColor="@color/green_primary" android:textStyle="bold" android:layout_marginTop="4dp" />
+            </LinearLayout>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/border_default" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="32dp" android:layout_height="32dp" android:text="5" android:gravity="center" android:textColor="@color/white" android:textSize="14sp" android:background="@drawable/bg_step_inactive" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="이용동의" android:textSize="10sp" android:textColor="@color/text_hint" android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 가구 특성 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/bg_card_outline"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="가구 특성 (선택)"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="12dp" />
+
+            <CheckBox
+                android:id="@+id/cbHouseholdNone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="해당사항 없음"
+                android:textSize="13sp"
+                android:buttonTint="@color/green_primary"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:id="@+id/layoutHouseholdOptions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <CheckBox
+                    android:id="@+id/cbMultiChild"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="다자녀 가정 (3자녀 이상)"
+                    android:textSize="13sp"
+                    android:buttonTint="@color/green_primary"
+                    android:layout_marginBottom="4dp" />
+                <CheckBox
+                    android:id="@+id/cbSingleParent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="한부모 가정"
+                    android:textSize="13sp"
+                    android:buttonTint="@color/green_primary"
+                    android:layout_marginBottom="4dp" />
+                <CheckBox
+                    android:id="@+id/cbGrandparent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="조손 가정"
+                    android:textSize="13sp"
+                    android:buttonTint="@color/green_primary"
+                    android:layout_marginBottom="4dp" />
+                <CheckBox
+                    android:id="@+id/cbDisabled"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="장애인 가정"
+                    android:textSize="13sp"
+                    android:buttonTint="@color/green_primary" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 제출 서류 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/bg_card_outline"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="제출 서류 (필수)"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="· 신청을 위해 아래 서류를 첨부해주세요.\n· 파일 형식: JPG, PNG, PDF"
+                android:textSize="11sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginBottom="12dp" />
+
+            <!-- 주민등록등본 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="주민등록등본 *"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_primary" />
+                    <TextView
+                        android:id="@+id/tvFile1Name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="파일을 선택해주세요"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_hint"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+                <Button
+                    android:id="@+id/btnPickFile1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="파일 첨부"
+                    android:textSize="12sp"
+                    android:backgroundTint="@color/green_primary" />
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border_default" android:layout_marginBottom="12dp" />
+
+            <!-- 건강보험료납부확인서 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="건강보험료납부확인서 *"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_primary" />
+                    <TextView
+                        android:id="@+id/tvFile2Name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="파일을 선택해주세요"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_hint"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+                <Button
+                    android:id="@+id/btnPickFile2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="파일 첨부"
+                    android:textSize="12sp"
+                    android:backgroundTint="@color/green_primary" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 추가 제출 서류 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/bg_card_outline"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="추가 제출 서류 (선택)"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+                <Button
+                    android:id="@+id/btnAddFile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="+ 추가하기"
+                    android:textSize="12sp"
+                    android:backgroundTint="@color/green_primary" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="8dp" />
+
+            <!-- 동적 추가 파일 컨테이너 -->
+            <LinearLayout
+                android:id="@+id/llExtraFiles"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+
+        <!-- 네비게이션 버튼 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp">
+
+            <Button
+                android:id="@+id/btnPrevStep"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="이전단계로 이동"
+                android:textSize="14sp"
+                android:layout_marginRight="8dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+            <Button
+                android:id="@+id/btnNextStep"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="다음단계로 이동"
+                android:textSize="14sp"
+                android:backgroundTint="@color/green_primary" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

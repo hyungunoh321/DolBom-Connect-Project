@@ -1,18 +1,56 @@
 package com.siheung.careconnect.reservation
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.siheung.careconnect.R
 import com.siheung.careconnect.databinding.ActivityBookingBinding
+import kotlinx.serialization.Serializable
+
+data class Guardian(
+    var name: String = "",
+    var relation: String = "모",
+    var phone: String = ""
+)
+
+data class RelatedOrg(
+    var orgName: String = "",
+    var manager: String = "",
+    var phone: String = "",
+    var note: String = ""
+)
 
 data class BookingFormData(
     var applicantName: String = "",
     var applicantPhone: String = "",
     var childName: String = "",
     var childBirthDate: String = "",
-    var childId: String? = null
+    var childId: String? = null,
+    var childGender: String = "남",
+    var childContactPhone: String = "",
+    var childSchoolSameAsCenter: Boolean = false,
+    var childSchoolName: String = "",
+    var childGrade: String = "",
+    var childClass: String = "",
+    var childHealthStatus: String = "양호",
+    var childHealthNote: String = "",
+    var childAddressMain: String = "",
+    var childAddressDetail: String = "",
+    var guardians: MutableList<Guardian> = mutableListOf(),
+    var careDays: MutableList<String> = mutableListOf(),
+    var careStartHour: Int = 0,
+    var careStartMin: Int = 0,
+    var careEndHour: Int = 2,
+    var careEndMin: Int = 0,
+    var relatedOrgs: MutableList<RelatedOrg> = mutableListOf(),
+    var childNotes: String = "",
+    var householdFeatures: MutableList<String> = mutableListOf(),
+    var agreePersonalInfo: Boolean = false,
+    var agreeTerms: Boolean = false,
 )
+
+@Serializable
+data class ChildInsertResult(val id: String)
 
 class BookingActivity : AppCompatActivity() {
 
@@ -59,14 +97,20 @@ class BookingActivity : AppCompatActivity() {
     }
 
     fun goToNextStep(currentStep: Int) {
-        when (currentStep) {
-            2 -> Toast.makeText(this, "다음 단계(기본정보)는 곧 구현됩니다.", Toast.LENGTH_SHORT).show()
+        val fragment: Fragment = when (currentStep) {
+            2 -> BasicInfoFragment()
+            3 -> AdditionalInfoFragment()
+            4 -> TermsAgreementFragment()
+            else -> return
         }
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     fun goToPrevStep(currentStep: Int) {
-        when (currentStep) {
-            2 -> finish()
-        }
+        if (currentStep == 2) finish()
+        else supportFragmentManager.popBackStack()
     }
 }
