@@ -10,6 +10,9 @@ import com.siheung.careconnect.main.MainActivity
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.launch
+import android.content.Context
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -46,6 +49,18 @@ class LoginActivity : AppCompatActivity() {
                                 this.password = password
                             }
 
+                            // FCM 토큰 Supabase에 저장
+                            val sharedPref = getSharedPreferences("careconnect_prefs", Context.MODE_PRIVATE)
+                            val fcmToken = sharedPref.getString("fcm_token", null)
+                            if (fcmToken != null) {
+                                val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id
+                                if (userId != null) {
+                                    SupabaseClientProvider.client.postgrest["users"]
+                                        .update(mapOf("fcm_token" to fcmToken)) {
+                                            filter { eq("id", userId) }
+                                        }
+                                }
+                            }
                             // 로그인 성공 → TODO: 역할(role) 확인 후 화면 분기
                             Toast.makeText(this@LoginActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
                             val intent = Intent(this@LoginActivity, MainActivity::class.java)
