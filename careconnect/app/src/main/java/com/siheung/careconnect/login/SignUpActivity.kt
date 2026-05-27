@@ -1,5 +1,6 @@
 package com.siheung.careconnect.login
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -9,11 +10,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.siheung.careconnect.databinding.ActivitySignUpBinding
-
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -45,44 +47,83 @@ class SignUpActivity : AppCompatActivity() {
                 val username    = binding.etUsername.text.toString().trim()
                 val childName   = binding.etChildName.text.toString().trim()
                 val birthDate   = binding.etChildBirthDate.text.toString().trim()
-                val gender      = if (binding.rbMale.isChecked) "남아" else "여아"
                 val incomeLevel = binding.etIncomeLevel.text.toString().trim().toIntOrNull()
+                // TODO: DB children 테이블에 gender 컬럼 추가 후 아래 주석 해제
+                // val gender = if (binding.rbMale.isChecked) "남아" else "여아"
 
                 binding.btnSignUp.isEnabled = false
 
                 lifecycleScope.launch {
                     try {
-                        // 1. Supabase Auth 회원가입 (이메일 기반)
+                        // 1. username 중복 체크
+                        val existingUser = SupabaseClientProvider.client.postgrest["users"]
+                            .select(Columns.raw("id")) {
+                                filter { eq("username", username) }
+                            }
+                            .decodeSingleOrNull<IdRow>()
+
+                        if (existingUser != null) {
+                            binding.etUsername.error = "이미 사용 중인 아이디입니다."
+                            binding.etUsername.requestFocus()
+                            binding.btnSignUp.isEnabled = true
+                            return@launch
+                        }
+
+                        // 2. Supabase Auth 회원가입
+                        //    이메일 인증 비활성화 시 signUpWith 이후 자동으로 세션이 생성됨
                         SupabaseClientProvider.client.auth.signUpWith(Email) {
                             this.email    = email
                             this.password = password
                         }
 
-                        // 2. 유저 ID 가져오기
-                        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: ""
+                        // 3. 세션 확인 (이메일 인증 비활성화 → 자동 로그인됨)
+                        //    이메일 인증이 필요한 경우 currentUserOrNull()이 null을 반환함
+                        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id
+                        if (userId == null) {
+                            Toast.makeText(
+                                this@SignUpActivity,
+                                "이메일 인증 메일을 보냈습니다. 인증 후 로그인해주세요.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            startActivity(
+                                Intent(this@SignUpActivity, LoginActivity::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                }
+                            )
+                            finish()
+                            return@launch
+                        }
 
-                        // 3. users 테이블에 추가 정보 저장 (username, role)
+                        // 4. users 테이블에 추가 정보 저장
+                        // DB users 컬럼: id, username, email, role, created_at
                         SupabaseClientProvider.client.postgrest["users"].insert(
                             buildJsonObject {
                                 put("id",       userId)
                                 put("username", username)
+                                put("email",    email)
                                 put("role",     "보호자")
                             }
                         )
 
-                        // 4. children 테이블에 자녀 정보 저장
+                        // 5. children 테이블에 자녀 정보 저장
+                        // DB children 컬럼: id, parent_id, name, birth_date, income_level
                         val childJson = buildJsonObject {
                             put("parent_id",  userId)
                             put("name",       childName)
                             put("birth_date", birthDate)
-                            put("gender",     gender)
                             if (incomeLevel != null) put("income_level", incomeLevel)
                         }
                         SupabaseClientProvider.client.postgrest["children"].insert(childJson)
 
+                        // 회원가입 완료 후 email 캐시 저장 (재로그인 시 DB 조회 불필요)
+                        getSharedPreferences("auth_cache", Context.MODE_PRIVATE)
+                            .edit()
+                            .putString("email_$username", email)
+                            .apply()
+
                         Toast.makeText(
                             this@SignUpActivity,
-                            "회원가입 완료! 이메일 인증 후 로그인해주세요.",
+                            "회원가입이 완료되었습니다!",
                             Toast.LENGTH_LONG
                         ).show()
 
@@ -94,14 +135,19 @@ class SignUpActivity : AppCompatActivity() {
                     } catch (e: Exception) {
                         val msg = e.message ?: ""
                         when {
-                            msg.contains("already registered") || msg.contains("already exists") -> {
+                            msg.contains("already registered") || msg.contains("already exists") ||
+                            msg.contains("User already registered") -> {
                                 binding.etEmail.error = "이미 사용 중인 이메일입니다."
                                 binding.etEmail.requestFocus()
+                            }
+                            msg.contains("users_username_key") -> {
+                                binding.etUsername.error = "이미 사용 중인 아이디입니다."
+                                binding.etUsername.requestFocus()
                             }
                             else -> {
                                 Toast.makeText(
                                     this@SignUpActivity,
-                                    "회원가입 실패: 다시 시도해주세요.",
+                                    "오류: ${e.message}",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -113,7 +159,6 @@ class SignUpActivity : AppCompatActivity() {
             }
         }
 
-        // 뒤로가기
         binding.btnBack.setOnClickListener { finish() }
     }
 
@@ -125,7 +170,8 @@ class SignUpActivity : AppCompatActivity() {
         val childName       = binding.etChildName.text.toString().trim()
         val birthDate       = binding.etChildBirthDate.text.toString().trim()
         val incomeLevelStr  = binding.etIncomeLevel.text.toString().trim()
-        val isGenderSelected = binding.rbMale.isChecked || binding.rbFemale.isChecked
+        // TODO: DB children 테이블에 gender 컬럼 추가 후 아래 주석 해제
+        // val isGenderSelected = binding.rbMale.isChecked || binding.rbFemale.isChecked
 
         if (username.isEmpty()) {
             binding.etUsername.error = "아이디를 입력해주세요."
@@ -190,10 +236,11 @@ class SignUpActivity : AppCompatActivity() {
                 return false
             }
         }
-        if (!isGenderSelected) {
-            Toast.makeText(this, "자녀 성별을 선택해주세요.", Toast.LENGTH_SHORT).show()
-            return false
-        }
+        // TODO: DB children 테이블에 gender 컬럼 추가 후 아래 주석 해제
+        // if (!isGenderSelected) {
+        //     Toast.makeText(this, "자녀 성별을 선택해주세요.", Toast.LENGTH_SHORT).show()
+        //     return false
+        // }
         if (!binding.cbAgreement.isChecked) {
             Toast.makeText(this, "이용약관 및 개인정보 처리방침에 동의해주세요.", Toast.LENGTH_SHORT).show()
             return false
@@ -205,3 +252,7 @@ class SignUpActivity : AppCompatActivity() {
         return true
     }
 }
+
+// username 중복 체크용
+@Serializable
+private data class IdRow(val id: String)

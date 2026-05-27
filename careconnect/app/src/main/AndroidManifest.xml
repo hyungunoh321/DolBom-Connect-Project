@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.siheung.careconnect">
-
     <!-- 인터넷 권한 (FCM 알림, API 통신용) -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-    <!-- 위치 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- 위치 권한 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
 
     <application
         android:allowBackup="true"
@@ -18,31 +14,49 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CareConnect">
-
+        <activity
+            android:name=".facilityadmin.AdminReservationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".facilityadmin.AdminScheduleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".facilityadmin.AdminMainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".systemadmin.SystemAdminActivity"
+            android:exported="true" />
         <activity
             android:name=".main.MainActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
         <activity android:name=".benefits.BenefitsActivity" />
-        <activity android:name=".admin.SystemAdminActivity" />
-
         <activity android:name=".reservation.ReservationActivity" />
+        <activity android:name=".reservation.BookingActivity" />
+        <activity android:name=".reservation.ReservationStatusActivity" />
         <activity android:name=".login.LoginActivity" />
         <activity android:name=".login.SignUpActivity" />
+        <activity android:name=".realtime.RealtimeActivity" />
+
         <!-- 나중에 추가할 화면들 -->
         <!--
-        <activity android:name=".benefits.BenefitsActivity" />
         <activity android:name=".reservationStatus.ReservationStatusActivity" />
-        <activity android:name=".realtime.RealtimeActivity" />
         -->
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${GOOGLE_MAPS_API_KEY}" />
+
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
     </application>
 
