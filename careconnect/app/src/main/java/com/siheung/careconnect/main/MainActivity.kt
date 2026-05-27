@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import com.siheung.careconnect.R
@@ -26,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         setupDrawer()
         setupMenuCards()
         updateUserInfo()
+        setupBackPress()
     }
 
     // ── 로그인 정보 반영 ──────────────────────────────────────
@@ -109,13 +111,16 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, destination))
     }
 
-    // 뒤로 가기 시 드로어가 열려 있으면 닫기
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            super.onBackPressed()
-        }
+    private fun setupBackPress() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 }

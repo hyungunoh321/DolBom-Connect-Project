@@ -37,6 +37,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setAutoCancel(true)
             .build()
 
-        manager.notify(System.currentTimeMillis().toInt(), notification)
+        manager.notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
     }
 }
