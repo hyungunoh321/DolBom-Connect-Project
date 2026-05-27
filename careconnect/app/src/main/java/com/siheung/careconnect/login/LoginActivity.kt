@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.siheung.careconnect.admin.SystemAdminActivity
 import com.siheung.careconnect.databinding.ActivityLoginBinding
 import com.siheung.careconnect.facilityadmin.AdminMainActivity
 import com.siheung.careconnect.main.MainActivity
@@ -131,14 +130,6 @@ class LoginActivity : AppCompatActivity() {
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
                             finish()
-
-                            val destination = if (role == "시스템관리자") {
-                                SystemAdminActivity::class.java
-                            } else {
-                                MainActivity::class.java
-                            }
-                            startActivity(Intent(this@LoginActivity, destination))
-                            finish()
                         } catch (e: Exception) {
                             val msg = e.message ?: ""
                             when {
@@ -166,20 +157,6 @@ class LoginActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener {
             finish()
         }
-    }
-
-    private suspend fun loadCurrentUserRole(): String? {
-        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: return null
-        return SupabaseClientProvider.client
-            .postgrest["users"]
-            .select(Columns.raw("id,role")) {
-                filter {
-                    eq("id", userId)
-                }
-            }
-            .decodeList<LoginUserRole>()
-            .firstOrNull()
-            ?.role
     }
 
     private fun showError(message: String) {

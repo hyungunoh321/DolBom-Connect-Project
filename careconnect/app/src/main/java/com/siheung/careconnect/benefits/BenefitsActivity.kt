@@ -215,41 +215,6 @@ class BenefitsActivity : AppCompatActivity() {
         return listOf("전체") + categories
     }
 
-    private fun loadPolicies() {
-        lifecycleScope.launch {
-            binding.tvResultCount.text = "불러오는 중..."
-
-            try {
-                val result = SupabaseClientProvider.client
-                    .postgrest["policies"]
-                    .select()
-
-                allPolicies = result.decodeList<PolicyRow>().map { it.toPolicyItem() }
-                selectedFilter = "전체"
-                setupFilterChips(buildFilters(allPolicies))
-                updateList(selectedFilter)
-            } catch (e: Exception) {
-                Log.e("BenefitsActivity", "Failed to load policies from Supabase", e)
-                allPolicies = emptyList()
-                setupFilterChips(listOf("전체"))
-                updateList(selectedFilter)
-                android.widget.Toast.makeText(
-                    this@BenefitsActivity,
-                    "정책 정보를 불러오지 못했습니다.",
-                    android.widget.Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-    }
-
-    private fun buildFilters(policies: List<PolicyItem>): List<String> {
-        val categories = policies
-            .map { it.category }
-            .filter { it.isNotBlank() }
-            .distinct()
-        return listOf("전체") + categories
-    }
-
     // ── 상세 BottomSheet ──────────────────────────────────────
     private fun showDetailBottomSheet(item: PolicyItem) {
         val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
