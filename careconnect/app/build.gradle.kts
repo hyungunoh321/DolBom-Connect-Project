@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.android.application)
     kotlin("plugin.serialization") version "1.9.0"
     id("com.google.gms.google-services")
-
 }
 
 // local.properties에서 키를 미리 읽어옴

@@ -2,12 +2,20 @@ package com.siheung.careconnect.reservation
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.DatePickerDialog
+import android.app.Dialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -17,9 +25,18 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.maps.android.clustering.ClusterManager
 import com.siheung.careconnect.R
 import com.siheung.careconnect.databinding.ActivityReservationBinding
+import com.siheung.careconnect.login.SupabaseClientProvider
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Calendar
 
 class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -29,18 +46,9 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var clusterManager: ClusterManager<ChildcareFacility>
     private lateinit var facilityAdapter: FacilityAdapter
 
-    private val siheungCenter = LatLng(37.3802, 126.8028) // 시흥시청 기준 중심점
+    private val siheungCenter = LatLng(37.3802, 126.8028)
     private var lastKnownLocation: Location? = null
-
-    // 샘플 보육기관 데이터
-    private val sampleFacilities = mutableListOf(
-        ChildcareFacility("1", "시흥시청 어린이집", "시흥시 시청로 20", 37.3802, 126.8028),
-        ChildcareFacility("2", "정왕 어린이집", "시흥시 정왕대로 233", 37.3444, 126.7317),
-        ChildcareFacility("3", "배곧 어린이집", "시흥시 배곧3로 80", 37.3711, 126.7214),
-        ChildcareFacility("4", "능곡 어린이집", "시흥시 능곡로 45", 37.3789, 126.8145),
-        ChildcareFacility("5", "목감 어린이집", "시흥시 목감중앙로 20", 37.3828, 126.8778),
-        ChildcareFacility("6", "은계 어린이집", "시흥시 은계중앙로 30", 37.4422, 126.8228)
-    )
+    private val facilities = mutableListOf<ChildcareFacility>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,24 +57,49 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // 지도 조각 초기화
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         setupUI()
         setupRecyclerView()
+        setupFilterChips()
+        updateResultCount(0)
+        loadFacilities()
+    }
+
+    private fun loadFacilities() {
+        lifecycleScope.launch {
+            try {
+                val loaded = withContext(Dispatchers.IO) {
+                    SupabaseClientProvider.client.postgrest["facilities"]
+                        .select()
+                        .decodeList<ChildcareFacility>()
+                }
+                facilities.clear()
+                facilities.addAll(loaded)
+                facilityAdapter.updateItems(facilities)
+                updateResultCount(facilities.size)
+                if (::clusterManager.isInitialized) {
+                    clusterManager.clearItems()
+                    clusterManager.addItems(facilities)
+                    clusterManager.cluster()
+                }
+                lastKnownLocation?.let { sortAndDisplayFacilities(it) }
+            } catch (e: Exception) {
+                Log.e("ReservationActivity", "시설 조회 실패: ${e.message}")
+                Toast.makeText(this@ReservationActivity, "시설 정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun setupUI() {
         binding.btnBack.setOnClickListener { finish() }
 
-        // BottomSheet 설정
         val behavior = BottomSheetBehavior.from(binding.bottomSheet)
         behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: android.view.View, newState: Int) {}
             override fun onSlide(bottomSheet: android.view.View, slideOffset: Float) {
-                // 바텀시트가 올라오면 지도의 패딩을 조절하여 구글 로고 등이 가려지지 않게 함
                 val padding = (slideOffset * 500).toInt().coerceAtLeast(0)
                 if (::mMap.isInitialized) {
                     mMap.setPadding(0, 0, 0, padding + 200)
@@ -76,23 +109,164 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setupRecyclerView() {
-        facilityAdapter = FacilityAdapter(emptyList()) { facility ->
-            // 리스트 아이템 클릭 시 해당 위치로 카메라 이동
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(facility.position, 16f))
-            BottomSheetBehavior.from(binding.bottomSheet).state = BottomSheetBehavior.STATE_COLLAPSED
-        }
+        facilityAdapter = FacilityAdapter(
+            emptyList(),
+            onItemClick = { facility ->
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(facility.position, 16f))
+                BottomSheetBehavior.from(binding.bottomSheet).state =
+                    BottomSheetBehavior.STATE_COLLAPSED
+            },
+            onReserveClick = { facility ->
+                val intent = Intent(this@ReservationActivity, BookingActivity::class.java).apply {
+                    putExtra(BookingActivity.EXTRA_FACILITY_ID, facility.id)
+                    putExtra(BookingActivity.EXTRA_FACILITY_NAME, facility.name)
+                    putExtra(BookingActivity.EXTRA_FACILITY_ADDRESS, facility.address)
+                    putExtra(BookingActivity.EXTRA_FACILITY_DISTRICT, facility.district)
+                }
+                startActivity(intent)
+            }
+        )
         binding.rvFacilities.apply {
             layoutManager = LinearLayoutManager(this@ReservationActivity)
             adapter = facilityAdapter
         }
     }
 
+    private fun setupFilterChips() {
+        binding.cgDistrict.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
+            val chipText = group.findViewById<Chip>(checkedIds[0])?.text?.toString() ?: "전체"
+            applyDistrictFilter(chipText)
+        }
+    }
+
+    private fun applyDistrictFilter(district: String) {
+        val filtered = if (district == "전체") facilities.toList()
+                       else facilities.filter { it.district == district }
+        facilityAdapter.updateItems(filtered)
+        updateResultCount(filtered.size)
+
+        if (::clusterManager.isInitialized) {
+            clusterManager.clearItems()
+            clusterManager.addItems(filtered)
+            clusterManager.cluster()
+        }
+    }
+
+    private fun updateResultCount(count: Int) {
+        binding.tvResultCount.text = "총 결과 ${count}개"
+    }
+
+    // ── 날짜 선택 ──────────────────────────────────────────────────
+
+    private fun showDatePicker(facility: ChildcareFacility) {
+        val cal = Calendar.getInstance()
+        DatePickerDialog(
+            this,
+            { _, year, month, day ->
+                showTimeSlotDialog(facility, year, month + 1, day)
+            },
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH),
+            cal.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            datePicker.minDate = cal.timeInMillis
+        }.show()
+    }
+
+    // ── 시간대 선택 다이얼로그 ─────────────────────────────────────
+
+    private fun showTimeSlotDialog(facility: ChildcareFacility, year: Int, month: Int, day: Int) {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.dialog_time_slot)
+        dialog.window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent)
+            setLayout(
+                (resources.displayMetrics.widthPixels * 0.88).toInt(),
+                WindowManager.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val cgTime = dialog.findViewById<ChipGroup>(R.id.cgTimeSlot)
+        dialog.findViewById<Button>(R.id.btnNext).setOnClickListener {
+            val checkedId = cgTime.checkedChipId
+            if (checkedId == android.view.View.NO_ID) {
+                Toast.makeText(this, "시간을 선택해주세요", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val timeStr = dialog.findViewById<Chip>(checkedId).text.toString()
+            val reservedAt = String.format("%04d-%02d-%02dT%s:00", year, month, day, timeStr)
+            dialog.dismiss()
+            showBookingConfirmDialog(facility, reservedAt, year, month, day, timeStr)
+        }
+
+        dialog.show()
+    }
+
+    // ── 예약 확인 다이얼로그 ───────────────────────────────────────
+
+    private fun showBookingConfirmDialog(
+        facility: ChildcareFacility,
+        reservedAt: String,
+        year: Int, month: Int, day: Int,
+        time: String
+    ) {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.dialog_booking_confirm)
+        dialog.window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent)
+            setLayout(
+                (resources.displayMetrics.widthPixels * 0.88).toInt(),
+                WindowManager.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        dialog.findViewById<TextView>(R.id.tvFacilityName).text = facility.name
+        dialog.findViewById<TextView>(R.id.tvReservedAt).text =
+            "${year}년 ${month}월 ${day}일  $time"
+
+        dialog.findViewById<Button>(R.id.btnCancel).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        val btnConfirm = dialog.findViewById<Button>(R.id.btnConfirm)
+        btnConfirm.setOnClickListener {
+            val parentId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id
+            if (parentId == null) {
+                Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            btnConfirm.isEnabled = false
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        SupabaseClientProvider.client.postgrest["reservations"].insert(
+                            ReservationRequest(
+                                parent_id = parentId,
+                                facility_id = facility.id,
+                                reserved_at = reservedAt
+                            )
+                        )
+                    }
+                    Toast.makeText(this@ReservationActivity, "예약이 완료되었습니다 (대기)", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                } catch (e: Exception) {
+                    Log.e("ReservationActivity", "예약 실패: ${e.message}")
+                    Toast.makeText(this@ReservationActivity, "예약에 실패했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    btnConfirm.isEnabled = true
+                }
+            }
+        }
+
+        dialog.show()
+    }
+
+    // ── 지도 콜백 ─────────────────────────────────────────────────
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        
-        // 초기 카메라 위치: 시흥시청
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(siheungCenter, 13f))
-
         setupClusterManager()
         updateLocationUI()
         getDeviceLocation()
@@ -102,17 +276,26 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
         clusterManager = ClusterManager(this, mMap)
         mMap.setOnCameraIdleListener(clusterManager)
         mMap.setOnMarkerClickListener(clusterManager)
-
-        clusterManager.addItems(sampleFacilities)
+        clusterManager.addItems(facilities)
         clusterManager.cluster()
 
-        // 마커 클릭 시 동작
         clusterManager.setOnClusterItemClickListener { item ->
-            binding.tvListTitle.text = item.name
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(item.position, 16f))
-            // 바텀시트를 펼쳐서 상세 정보를 보여줄 수도 있음
             false
         }
+
+        clusterManager.markerCollection.setOnInfoWindowClickListener { marker ->
+            val facility = facilities.find { it.name == marker.title }
+                ?: return@setOnInfoWindowClickListener
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 16f))
+            scrollToFacility(facility)
+        }
+    }
+
+    private fun scrollToFacility(facility: ChildcareFacility) {
+        facilityAdapter.moveToTop(facility.id)
+        (binding.rvFacilities.layoutManager as LinearLayoutManager)
+            .scrollToPositionWithOffset(0, 0)
     }
 
     @SuppressLint("MissingPermission")
@@ -138,24 +321,20 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun sortAndDisplayFacilities(currentLocation: Location) {
-        // 거리 계산 및 정렬
-        sampleFacilities.forEach { facility ->
+        facilities.forEach { facility ->
             val dest = Location("").apply {
                 latitude = facility.latitude
                 longitude = facility.longitude
             }
             facility.distance = currentLocation.distanceTo(dest)
         }
-
-        val sortedList = sampleFacilities.sortedBy { it.distance }
-        facilityAdapter.updateItems(sortedList)
+        val sorted = facilities.sortedBy { it.distance }
+        facilityAdapter.updateItems(sorted)
     }
 
-    private fun checkPermission(): Boolean {
-        return ActivityCompat.checkSelfPermission(
-            this, Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    }
+    private fun checkPermission() = ActivityCompat.checkSelfPermission(
+        this, Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
 
     private fun requestPermission() {
         ActivityCompat.requestPermissions(
@@ -169,7 +348,9 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1000 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == 1000 && grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
             updateLocationUI()
             getDeviceLocation()
         }

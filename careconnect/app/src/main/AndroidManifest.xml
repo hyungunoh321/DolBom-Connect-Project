@@ -29,6 +29,8 @@
         <activity android:name=".benefits.BenefitsActivity" />
 
         <activity android:name=".reservation.ReservationActivity" />
+        <activity android:name=".reservation.BookingActivity" />
+        <activity android:name=".reservation.ReservationStatusActivity" />
         <activity android:name=".login.LoginActivity" />
         <activity android:name=".login.SignUpActivity" />
         <activity android:name=".realtime.RealtimeActivity" />
