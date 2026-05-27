@@ -59,6 +59,7 @@ class FacilityAdapter(
         val reordered = items.toMutableList()
         reordered.add(0, reordered.removeAt(idx))
         items = reordered
-        notifyDataSetChanged()
+        notifyItemMoved(idx, 0)
+        notifyItemRangeChanged(0, idx + 1)
     }
 }

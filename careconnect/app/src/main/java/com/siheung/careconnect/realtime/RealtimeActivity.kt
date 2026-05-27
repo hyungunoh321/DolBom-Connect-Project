@@ -14,6 +14,8 @@ import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -41,6 +43,7 @@ class RealtimeActivity : AppCompatActivity() {
     private lateinit var adapter: NoticeListAdapter
     private val supabase = SupabaseClientProvider.client
     private val channel by lazy { supabase.channel("notices-channel") }
+    private val cleanupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -159,11 +162,11 @@ class RealtimeActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        CoroutineScope(Dispatchers.IO).launch {
+        cleanupScope.launch {
             try {
                 channel.unsubscribe()
                 supabase.realtime.removeChannel(channel)
             } catch (_: Exception) { }
-        }
+        }.invokeOnCompletion { cleanupScope.cancel() }
     }
 }

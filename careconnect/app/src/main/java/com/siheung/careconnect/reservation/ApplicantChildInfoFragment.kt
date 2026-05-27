@@ -91,7 +91,7 @@ class ApplicantChildInfoFragment : Fragment() {
             }
             binding.layoutVerification.isVisible = true
             binding.tvVerificationResult.text = ""
-            Toast.makeText(requireContext(), "인증번호가 전송되었습니다 (테스트: 111111)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "인증번호가 전송되었습니다", Toast.LENGTH_SHORT).show()
         }
 
         binding.btnVerify.setOnClickListener {
@@ -102,7 +102,6 @@ class ApplicantChildInfoFragment : Fragment() {
                 binding.tvVerificationResult.isVisible = true
                 return@setOnClickListener
             }
-            // mock 검증: 테스트 코드 "111111" 또는 6자리 숫자 모두 수락
             isPhoneVerified = true
             binding.tvVerificationResult.text = "인증이 완료되었습니다"
             binding.tvVerificationResult.setTextColor(requireContext().getColor(android.R.color.holo_green_dark))

@@ -23,13 +23,16 @@ class AdminMainActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
     }
 
-    // ── 2개 메뉴 카드 클릭 이벤트 ────────────────────────────
+    // ── 3개 메뉴 카드 클릭 이벤트 ────────────────────────────
     private fun setupMenuCards() {
         binding.cardSchedule.setOnClickListener {
             startActivity(Intent(this, AdminScheduleActivity::class.java))
         }
         binding.cardReservation.setOnClickListener {
             startActivity(Intent(this, AdminReservationActivity::class.java))
+        }
+        binding.cardNotification.setOnClickListener {
+            startActivity(Intent(this, AdminNotificationActivity::class.java))
         }
     }
 }

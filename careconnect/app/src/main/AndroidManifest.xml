@@ -24,6 +24,9 @@
             android:name=".facilityadmin.AdminMainActivity"
             android:exported="false" />
         <activity
+            android:name=".facilityadmin.AdminNotificationActivity"
+            android:exported="false" />
+        <activity
             android:name=".systemadmin.SystemAdminActivity"
             android:exported="true" />
         <activity
