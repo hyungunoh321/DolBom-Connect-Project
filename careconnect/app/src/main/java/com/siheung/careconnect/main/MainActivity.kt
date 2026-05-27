@@ -10,6 +10,7 @@ import com.siheung.careconnect.databinding.ActivityMainBinding
 import com.siheung.careconnect.reservation.ReservationActivity
 import com.siheung.careconnect.reservation.ReservationStatusActivity
 import com.siheung.careconnect.login.LoginActivity
+import com.siheung.careconnect.realtime.RealtimeActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,7 +41,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_reserve -> navigateTo(ReservationActivity::class.java)
                 R.id.nav_login -> navigateTo(LoginActivity::class.java)
                 R.id.nav_status -> navigateTo(ReservationStatusActivity::class.java)
-                //R.id.nav_realtime -> navigateTo(RealtimeActivity::class.java)
+                R.id.nav_realtime -> navigateTo(RealtimeActivity::class.java)
             }
             true
         }
@@ -58,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             navigateTo(ReservationStatusActivity::class.java)
         }
         binding.layoutCards.cardRealtime.setOnClickListener {
-            //navigateTo(RealtimeActivity::class.java)
+            navigateTo(RealtimeActivity::class.java)
         }
     }
 

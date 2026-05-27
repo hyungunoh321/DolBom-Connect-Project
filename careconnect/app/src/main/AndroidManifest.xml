@@ -10,7 +10,6 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -34,16 +33,24 @@
         <activity android:name=".reservation.ReservationStatusActivity" />
         <activity android:name=".login.LoginActivity" />
         <activity android:name=".login.SignUpActivity" />
+        <activity android:name=".realtime.RealtimeActivity" />
+
         <!-- 나중에 추가할 화면들 -->
         <!--
-        <activity android:name=".benefits.BenefitsActivity" />
         <activity android:name=".reservationStatus.ReservationStatusActivity" />
-        <activity android:name=".realtime.RealtimeActivity" />
         -->
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${GOOGLE_MAPS_API_KEY}" />
+
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
     </application>
 
