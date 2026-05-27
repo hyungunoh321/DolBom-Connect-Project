@@ -1,5 +1,6 @@
 package com.siheung.careconnect.login
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -46,32 +47,52 @@ class LoginActivity : AppCompatActivity() {
 
                     lifecycleScope.launch {
                         try {
-                            // users 테이블에서 username으로 email 조회
-                            val emailRow = SupabaseClientProvider.client.postgrest["users"]
-                                .select(Columns.raw("email")) {
-                                    filter { eq("username", username) }
-                                }
-                                .decodeSingleOrNull<EmailRow>()
+                            // SharedPreferences 캐시에서 email 우선 조회
+                            // (앱 재실행 시 Supabase RLS로 인해 비인증 상태에서 DB 조회가 막힐 수 있음)
+                            val prefs = getSharedPreferences("auth_cache", Context.MODE_PRIVATE)
+                            val cachedEmail = prefs.getString("email_$username", null)
 
-                            if (emailRow == null) {
-                                showError("아이디 또는 비밀번호가 잘못되었습니다.")
-                                binding.btnLogin.isEnabled = true
-                                return@launch
+                            val loginEmail = if (cachedEmail != null) {
+                                cachedEmail
+                            } else {
+                                val emailRow = SupabaseClientProvider.client.postgrest["users"]
+                                    .select(Columns.raw("email")) {
+                                        filter { eq("username", username) }
+                                    }
+                                    .decodeSingleOrNull<EmailRow>()
+
+                                if (emailRow == null) {
+                                    showError("아이디 또는 비밀번호가 잘못되었습니다.")
+                                    binding.btnLogin.isEnabled = true
+                                    return@launch
+                                }
+                                emailRow.email
                             }
 
                             SupabaseClientProvider.client.auth.signInWith(Email) {
-                                this.email    = emailRow.email
+                                this.email    = loginEmail
                                 this.password = password
                             }
 
+                            // 로그인 성공 시 email 캐시 저장 (다음 로그인부터 DB 조회 불필요)
+                            prefs.edit().putString("email_$username", loginEmail).apply()
+
                             // 로그인 성공 → users 테이블에서 role 조회
-                            // DB users 컬럼: id, username, password_hash, role, created_at
                             val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: ""
                             val userRow = SupabaseClientProvider.client.postgrest["users"]
                                 .select(Columns.raw("role")) {
                                     filter { eq("id", userId) }
                                 }
-                                .decodeSingle<UserRow>()
+                                .decodeSingleOrNull<UserRow>()
+
+                            if (userRow == null) {
+                                // 회원가입은 됐지만 users 테이블에 데이터가 없는 경우
+                                // (이메일 인증 미완료 등 회원가입이 중간에 실패한 계정)
+                                SupabaseClientProvider.client.auth.signOut()
+                                showError("계정 정보를 찾을 수 없습니다.\n다시 회원가입해 주세요.")
+                                binding.btnLogin.isEnabled = true
+                                return@launch
+                            }
 
                             Toast.makeText(this@LoginActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
 
@@ -91,7 +112,19 @@ class LoginActivity : AppCompatActivity() {
                                 }
                                 // TODO: 시스템 관리자 화면 연결 (팀원 작업 완료 후 주석 해제)
                                 "시스템관리자" -> Intent(this@LoginActivity, SystemAdminActivity::class.java)
-                                else -> Intent(this@LoginActivity, MainActivity::class.java)
+                                else -> {
+                                    val childrenRows = SupabaseClientProvider.client.postgrest["children"]
+                                        .select(Columns.raw("income_level")) {
+                                            filter { eq("parent_id", userId) }
+                                        }
+                                        .decodeList<ChildRow>()
+                                    Intent(this@LoginActivity, MainActivity::class.java).apply {
+                                        putExtra("username", username)
+                                        putExtra("children_count", childrenRows.size)
+                                        childrenRows.firstOrNull()?.incomeLevel
+                                            ?.let { putExtra("income_level", it) }
+                                    }
+                                }
                             }
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
@@ -148,4 +181,10 @@ private data class UserRow(
 @Serializable
 private data class FacilityRow(
     val id: String
+)
+
+// DB children 테이블: 자녀 수 및 소득분위 조회용
+@Serializable
+private data class ChildRow(
+    @SerialName("income_level") val incomeLevel: Int? = null
 )

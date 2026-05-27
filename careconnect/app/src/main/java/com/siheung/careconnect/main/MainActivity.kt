@@ -2,6 +2,8 @@ package com.siheung.careconnect.main
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import com.siheung.careconnect.R
@@ -21,6 +23,45 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setupDrawer()
         setupMenuCards()
+        updateUserInfo()
+    }
+
+    // ── 로그인 정보 반영 ──────────────────────────────────────
+    private fun updateUserInfo() {
+        val username = intent.getStringExtra("username")
+        val childrenCount = intent.getIntExtra("children_count", 0)
+        val incomeLevel = if (intent.hasExtra("income_level")) intent.getIntExtra("income_level", 0) else null
+
+        val drawerHeader = binding.navigationView.getHeaderView(0)
+        val tvDrawerUserName = drawerHeader.findViewById<TextView>(R.id.tvDrawerUserName)
+        val tvDrawerUserInfo = drawerHeader.findViewById<TextView>(R.id.tvDrawerUserInfo)
+
+        if (username != null) {
+            binding.layoutHero.tvUserName.text = "${username}님"
+
+            val badgeText = when {
+                incomeLevel != null -> "자녀 ${childrenCount}명 · 소득분위 ${incomeLevel}"
+                childrenCount > 0   -> "자녀 ${childrenCount}명"
+                else                -> null
+            }
+            if (badgeText != null) {
+                binding.layoutHero.tvUserBadge.text = badgeText
+                binding.layoutHero.tvUserBadge.visibility = View.VISIBLE
+            } else {
+                binding.layoutHero.tvUserBadge.visibility = View.GONE
+            }
+
+            binding.layoutHeader.btnLogin.text = "${username}님"
+
+            tvDrawerUserName.text = "${username}님"
+            tvDrawerUserInfo.text = if (childrenCount > 0) "시흥시 · 자녀 ${childrenCount}명" else "시흥시"
+        } else {
+            binding.layoutHero.tvUserName.text = "시흥시 보호자님"
+            binding.layoutHero.tvUserBadge.visibility = View.GONE
+            binding.layoutHeader.btnLogin.text = "로그인"
+            tvDrawerUserName.text = "게스트"
+            tvDrawerUserInfo.text = "로그인 후 이용 가능합니다"
+        }
     }
 
     // ── 사이드 드로어 설정 ──────────────────────────────────────

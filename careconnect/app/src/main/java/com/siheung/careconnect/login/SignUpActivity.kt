@@ -1,5 +1,6 @@
 package com.siheung.careconnect.login
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -69,18 +70,29 @@ class SignUpActivity : AppCompatActivity() {
                         }
 
                         // 2. Supabase Auth 회원가입
+                        //    이메일 인증 비활성화 시 signUpWith 이후 자동으로 세션이 생성됨
                         SupabaseClientProvider.client.auth.signUpWith(Email) {
                             this.email    = email
                             this.password = password
                         }
 
-                        // 3. 회원가입 직후 로그인해서 JWT 세션 확보 (RLS 통과를 위해 필요)
-                        SupabaseClientProvider.client.auth.signInWith(Email) {
-                            this.email    = email
-                            this.password = password
+                        // 3. 세션 확인 (이메일 인증 비활성화 → 자동 로그인됨)
+                        //    이메일 인증이 필요한 경우 currentUserOrNull()이 null을 반환함
+                        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id
+                        if (userId == null) {
+                            Toast.makeText(
+                                this@SignUpActivity,
+                                "이메일 인증 메일을 보냈습니다. 인증 후 로그인해주세요.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            startActivity(
+                                Intent(this@SignUpActivity, LoginActivity::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                }
+                            )
+                            finish()
+                            return@launch
                         }
-
-                        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: ""
 
                         // 4. users 테이블에 추가 정보 저장
                         // DB users 컬럼: id, username, email, role, created_at
@@ -102,6 +114,12 @@ class SignUpActivity : AppCompatActivity() {
                             if (incomeLevel != null) put("income_level", incomeLevel)
                         }
                         SupabaseClientProvider.client.postgrest["children"].insert(childJson)
+
+                        // 회원가입 완료 후 email 캐시 저장 (재로그인 시 DB 조회 불필요)
+                        getSharedPreferences("auth_cache", Context.MODE_PRIVATE)
+                            .edit()
+                            .putString("email_$username", email)
+                            .apply()
 
                         Toast.makeText(
                             this@SignUpActivity,
