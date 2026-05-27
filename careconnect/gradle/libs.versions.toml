@@ -25,3 +25,4 @@ androidx-cardview = { group = "androidx.cardview", name = "cardview", version.re
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.0.0" }

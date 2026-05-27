@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.siheung.careconnect.admin.SystemAdminActivity
 import com.siheung.careconnect.databinding.ActivityLoginBinding
 import com.siheung.careconnect.facilityadmin.AdminMainActivity
 import com.siheung.careconnect.main.MainActivity
@@ -131,11 +132,18 @@ class LoginActivity : AppCompatActivity() {
                             startActivity(intent)
                             finish()
 
+                            val destination = if (role == "시스템관리자") {
+                                SystemAdminActivity::class.java
+                            } else {
+                                MainActivity::class.java
+                            }
+                            startActivity(Intent(this@LoginActivity, destination))
+                            finish()
                         } catch (e: Exception) {
                             val msg = e.message ?: ""
                             when {
                                 msg.contains("Invalid login credentials") -> {
-                                    showError("아이디 또는 비밀번호가 잘못되었습니다.")
+                                    showError("아이디 또는 비밀번호가 올바르지 않습니다.")
                                 }
                                 msg.contains("Email not confirmed") -> {
                                     showError("이메일 인증이 필요합니다. 메일함을 확인해주세요.")
@@ -160,8 +168,22 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private suspend fun loadCurrentUserRole(): String? {
+        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: return null
+        return SupabaseClientProvider.client
+            .postgrest["users"]
+            .select(Columns.raw("id,role")) {
+                filter {
+                    eq("id", userId)
+                }
+            }
+            .decodeList<LoginUserRole>()
+            .firstOrNull()
+            ?.role
+    }
+
     private fun showError(message: String) {
-        binding.tvLoginError.text       = message
+        binding.tvLoginError.text = message
         binding.tvLoginError.visibility = View.VISIBLE
     }
 }
