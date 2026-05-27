@@ -15,10 +15,14 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -96,6 +100,19 @@ class LoginActivity : AppCompatActivity() {
                             }
 
                             Toast.makeText(this@LoginActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
+
+                            // FCM 토큰 DB 저장
+                            val fcmToken = getSharedPreferences("careconnect_prefs", Context.MODE_PRIVATE)
+                                .getString("fcm_token", null)
+                            if (fcmToken != null) {
+                                try {
+                                    withContext(Dispatchers.IO) {
+                                        SupabaseClientProvider.client.postgrest["users"].update(
+                                            buildJsonObject { put("fcm_token", fcmToken) }
+                                        ) { filter { eq("id", userId) } }
+                                    }
+                                } catch (_: Exception) { }
+                            }
 
                             val intent = when (userRow.role) {
                                 "보육원관리자" -> {

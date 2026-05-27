@@ -14,7 +14,16 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.realtime.PostgresAction
+import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.postgresChangeFlow
+import io.github.jan.supabase.realtime.realtime
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.buildJsonObject
@@ -24,6 +33,11 @@ class ReservationStatusActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityReservationStatusBinding
     private lateinit var adapter: ReservationStatusAdapter
+    private val cleanupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val channel by lazy {
+        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: "guest"
+        SupabaseClientProvider.client.channel("reservation-status-$userId")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +53,28 @@ class ReservationStatusActivity : AppCompatActivity() {
         binding.rvReservations.adapter = adapter
 
         loadReservations()
+        subscribeToRealtime()
+    }
+
+    private fun subscribeToRealtime() {
+        // 예약 상태 변경 시 자동 갱신
+        channel.postgresChangeFlow<PostgresAction.Update>(schema = "public") {
+            table = "reservations"
+        }.onEach {
+            withContext(Dispatchers.Main) { loadReservations() }
+        }.launchIn(lifecycleScope)
+
+        lifecycleScope.launch { channel.subscribe(blockUntilSubscribed = true) }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cleanupScope.launch {
+            try {
+                channel.unsubscribe()
+                SupabaseClientProvider.client.realtime.removeChannel(channel)
+            } catch (_: Exception) { }
+        }.invokeOnCompletion { cleanupScope.cancel() }
     }
 
     private fun loadReservations() {

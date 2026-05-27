@@ -6,6 +6,15 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.siheung.careconnect.login.SupabaseClientProvider
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -16,8 +25,17 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     override fun onNewToken(token: String) {
-        val sharedPref = getSharedPreferences("careconnect_prefs", Context.MODE_PRIVATE)
-        sharedPref.edit().putString("fcm_token", token).apply()
+        getSharedPreferences("careconnect_prefs", Context.MODE_PRIVATE)
+            .edit().putString("fcm_token", token).apply()
+
+        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: return
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                SupabaseClientProvider.client.postgrest["users"].update(
+                    buildJsonObject { put("fcm_token", token) }
+                ) { filter { eq("id", userId) } }
+            } catch (_: Exception) { }
+        }
     }
 
     private fun showNotification(title: String, body: String) {

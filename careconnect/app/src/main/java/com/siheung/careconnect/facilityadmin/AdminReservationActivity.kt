@@ -12,12 +12,15 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.siheung.careconnect.NotificationHelper
 import com.siheung.careconnect.R
 import com.siheung.careconnect.databinding.ActivityAdminReservationBinding
 import com.siheung.careconnect.login.SupabaseClientProvider
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
@@ -89,7 +92,7 @@ class AdminReservationActivity : AppCompatActivity() {
             try {
                 val dateStr = selectedDate.format(dateFormatter)
                 val result = SupabaseClientProvider.client.postgrest["reservations"]
-                    .select(Columns.raw("id, status, start_time, end_time, children(name)")) {
+                    .select(Columns.raw("id, status, start_time, end_time, parent_id, children(name)")) {
                         filter {
                             eq("facility_id", facilityId)
                             gte("start_time", "${dateStr}T00:00:00")
@@ -105,7 +108,8 @@ class AdminReservationActivity : AppCompatActivity() {
                         childName = row.children?.name ?: "미상",
                         startTime = row.startTime.substring(11, 16),
                         endTime   = row.endTime.substring(11, 16),
-                        status    = row.status
+                        status    = row.status,
+                        parentId  = row.parentId
                     )
                 })
                 reservationAdapter.notifyDataSetChanged()
@@ -119,16 +123,38 @@ class AdminReservationActivity : AppCompatActivity() {
         }
     }
 
-    // ── Supabase: 예약 상태 변경 (확정 / 완료) ───────────────
+    // ── Supabase: 예약 상태 변경 (확정 / 완료) + FCM 발송 ───────────────
     private fun updateStatus(reservation: AdminReservation, newStatus: String) {
         showLoading(true)
         lifecycleScope.launch {
             try {
-                SupabaseClientProvider.client.postgrest["reservations"].update(
-                    buildJsonObject { put("status", newStatus) }
-                ) {
-                    filter { eq("id", reservation.id) }
+                withContext(Dispatchers.IO) {
+                    SupabaseClientProvider.client.postgrest["reservations"].update(
+                        buildJsonObject { put("status", newStatus) }
+                    ) {
+                        filter { eq("id", reservation.id) }
+                    }
                 }
+
+                // 보호자 FCM 토큰 조회 후 알림 발송
+                if (reservation.parentId.isNotEmpty()) {
+                    try {
+                        val tokenRow = withContext(Dispatchers.IO) {
+                            SupabaseClientProvider.client.postgrest["users"]
+                                .select(Columns.raw("fcm_token")) {
+                                    filter { eq("id", reservation.parentId) }
+                                }
+                                .decodeSingleOrNull<FcmTokenRow>()
+                        }
+                        val fcmToken = tokenRow?.fcmToken
+                        if (!fcmToken.isNullOrEmpty()) {
+                            val title = if (newStatus == "확정") "예약이 확정되었습니다" else "예약이 완료되었습니다"
+                            val body  = "${reservation.childName} 아동의 예약이 $newStatus 처리되었습니다."
+                            NotificationHelper.sendNotification(fcmToken, title, body)
+                        }
+                    } catch (_: Exception) { }
+                }
+
                 Toast.makeText(
                     this@AdminReservationActivity,
                     "'${reservation.childName}' 예약이 $newStatus 처리되었습니다.",
@@ -153,7 +179,8 @@ data class AdminReservation(
     val childName: String,
     val startTime: String,
     val endTime: String,
-    val status: String
+    val status: String,
+    val parentId: String = ""
 )
 
 @Serializable
@@ -162,11 +189,17 @@ private data class ReservationRow(
     val status: String,
     @SerialName("start_time") val startTime: String,
     @SerialName("end_time")   val endTime: String,
+    @SerialName("parent_id")  val parentId: String = "",
     val children: ChildRef? = null
 )
 
 @Serializable
 private data class ChildRef(val name: String)
+
+@Serializable
+private data class FcmTokenRow(
+    @SerialName("fcm_token") val fcmToken: String? = null
+)
 
 // ── RecyclerView 어댑터 ───────────────────────────────────────
 class AdminReservationAdapter(
