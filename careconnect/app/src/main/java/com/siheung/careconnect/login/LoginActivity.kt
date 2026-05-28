@@ -115,7 +115,7 @@ class LoginActivity : AppCompatActivity() {
                             }
 
                             val intent = when (userRow.role) {
-                                "보육원관리자" -> {
+                                "관리자" -> {
                                     // facilities 테이블에서 manager_id로 facility_id 조회
                                     // DB facilities 컬럼: id, name, address, latitude, longitude, capacity, manager_id, created_at
                                     val facilityRow = SupabaseClientProvider.client.postgrest["facilities"]
