@@ -1,9 +1,11 @@
 package com.siheung.careconnect.systemadmin
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +22,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.siheung.careconnect.R
 import com.siheung.careconnect.databinding.ActivitySystemAdminBinding
 import com.siheung.careconnect.login.SupabaseClientProvider
+import com.siheung.careconnect.main.AppSessionState
+import com.siheung.careconnect.main.MainActivity
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.launch
@@ -39,6 +44,7 @@ class SystemAdminActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnBack.setOnClickListener { finish() }
+        binding.btnLogout.setOnClickListener { logout() }
         setupFilters()
         setupRecyclerView()
         loadUsers()
@@ -60,11 +66,7 @@ class SystemAdminActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
 
-        binding.etSearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = applyFilters()
-            override fun afterTextChanged(s: Editable?) = Unit
-        })
+        binding.etSearch.addTextChangedListener(SimpleTextWatcher { applyFilters() })
     }
 
     private fun setupRecyclerView() {
@@ -84,7 +86,19 @@ class SystemAdminActivity : AppCompatActivity() {
                     .postgrest["users"]
                     .select(Columns.raw("id,username,role,created_at"))
 
-                allUsers = result.decodeList<AdminUserRow>()
+                val loadedUsers = result.decodeList<AdminUserRow>()
+                allUsers = loadedUsers.filterNot { it.isSystemAdmin() }
+                Log.d(
+                    "SystemAdminActivity",
+                    "Loaded users: ${loadedUsers.size}, visible users: ${allUsers.size}"
+                )
+                if (loadedUsers.isNotEmpty() && allUsers.isEmpty()) {
+                    Toast.makeText(
+                        this@SystemAdminActivity,
+                        "시스템관리자 본인만 조회되었습니다. users 테이블 RLS 정책을 확인해주세요.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
                 applyFilters()
             } catch (e: Exception) {
                 allUsers = emptyList()
@@ -112,7 +126,8 @@ class SystemAdminActivity : AppCompatActivity() {
 
         userAdapter.submitList(filtered)
         binding.tvResultCount.text = "회원 ${filtered.size}명"
-        binding.tvEmpty.visibility = if (!binding.progressBar.isShown && filtered.isEmpty()) View.VISIBLE else View.GONE
+        binding.tvEmpty.visibility =
+            if (!binding.progressBar.isShown && filtered.isEmpty()) View.VISIBLE else View.GONE
     }
 
     private fun setLoading(isLoading: Boolean) {
@@ -121,7 +136,27 @@ class SystemAdminActivity : AppCompatActivity() {
         binding.tvEmpty.visibility = View.GONE
     }
 
+    private fun logout() {
+        lifecycleScope.launch {
+            AppSessionState.isAuthenticatedInCurrentProcess = false
+            runCatching { SupabaseClientProvider.client.auth.signOut() }
+            Toast.makeText(this@SystemAdminActivity, "로그아웃되었습니다.", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this@SystemAdminActivity, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+        }
+    }
+
     private fun updateUserRole(user: AdminUserRow, newRole: String) {
+        if (user.isSystemAdmin()) {
+            Toast.makeText(this, "시스템관리자는 권한을 변경할 수 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (newRole == ROLE_SYSTEM_ADMIN) {
+            Toast.makeText(this, "시스템관리자 권한으로 변경할 수 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
         if (user.role == newRole) {
             Toast.makeText(this, "이미 적용된 권한입니다.", Toast.LENGTH_SHORT).show()
             return
@@ -157,6 +192,11 @@ class SystemAdminActivity : AppCompatActivity() {
     }
 
     private fun showUserDetail(user: AdminUserRow) {
+        if (user.isSystemAdmin()) {
+            Toast.makeText(this, "시스템관리자 정보는 확인할 수 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         lifecycleScope.launch {
             val children = try {
                 SupabaseClientProvider.client
@@ -196,7 +236,7 @@ class SystemAdminActivity : AppCompatActivity() {
         return """
             회원 ID: ${user.id}
             현재 권한: ${user.role}
-            가입일: ${user.createdAt ?: "-"}
+            가입일: ${user.createdDateText()}
 
             자녀 정보
             $childText
@@ -205,7 +245,8 @@ class SystemAdminActivity : AppCompatActivity() {
 
     companion object {
         private const val ROLE_FILTER_ALL = "전체 권한"
-        val USER_ROLES = listOf("보호자", "관리자", "시스템관리자")
+        const val ROLE_SYSTEM_ADMIN = "시스템관리자"
+        val USER_ROLES = listOf("보호자", "관리자")
     }
 }
 
@@ -216,7 +257,10 @@ data class AdminUserRow(
     val role: String = "",
     @SerialName("created_at")
     val createdAt: String? = null
-)
+) {
+    fun isSystemAdmin(): Boolean = role == SystemAdminActivity.ROLE_SYSTEM_ADMIN
+    fun createdDateText(): String = createdAt?.take(10) ?: "-"
+}
 
 @Serializable
 data class ChildRow(
@@ -266,6 +310,7 @@ class AdminUserAdapter(
             tvUserId.text = user.id
             tvCurrentRole.text = user.role.ifBlank { "권한 없음" }
 
+            val isSystemAdmin = user.isSystemAdmin()
             val roleAdapter = ArrayAdapter(
                 itemView.context,
                 android.R.layout.simple_spinner_dropdown_item,
@@ -273,6 +318,9 @@ class AdminUserAdapter(
             )
             spRole.adapter = roleAdapter
             spRole.setSelection(SystemAdminActivity.USER_ROLES.indexOf(user.role).coerceAtLeast(0))
+            spRole.visibility = if (isSystemAdmin) View.GONE else View.VISIBLE
+            btnApplyRole.visibility = if (isSystemAdmin) View.GONE else View.VISIBLE
+            btnDetail.visibility = if (isSystemAdmin) View.GONE else View.VISIBLE
 
             btnApplyRole.setOnClickListener {
                 onApplyRole(user, spRole.selectedItem.toString())
@@ -282,4 +330,12 @@ class AdminUserAdapter(
             }
         }
     }
+}
+
+private class SimpleTextWatcher(
+    private val onChanged: () -> Unit
+) : TextWatcher {
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = onChanged()
+    override fun afterTextChanged(s: Editable?) = Unit
 }

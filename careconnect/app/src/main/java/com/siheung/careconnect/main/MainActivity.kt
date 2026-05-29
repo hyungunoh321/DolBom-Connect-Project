@@ -4,109 +4,196 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.lifecycle.lifecycleScope
 import com.siheung.careconnect.R
 import com.siheung.careconnect.benefits.BenefitsActivity
 import com.siheung.careconnect.databinding.ActivityMainBinding
+import com.siheung.careconnect.login.LoginActivity
+import com.siheung.careconnect.login.SupabaseClientProvider
+import com.siheung.careconnect.mypage.MyPageActivity
+import com.siheung.careconnect.realtime.RealtimeActivity
 import com.siheung.careconnect.reservation.ReservationActivity
 import com.siheung.careconnect.reservation.ReservationStatusActivity
-import com.siheung.careconnect.login.LoginActivity
-import com.siheung.careconnect.realtime.RealtimeActivity
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
+import kotlinx.coroutines.launch
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private var userSummary: MainUserSummary? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        updateUserViews(null)
         setupDrawer()
         setupMenuCards()
-        updateUserInfo()
         setupBackPress()
+        resetSavedLoginOnAppStart()
     }
 
-    // ── 로그인 정보 반영 ──────────────────────────────────────
-    private fun updateUserInfo() {
-        val username = intent.getStringExtra("username")
-        val childrenCount = intent.getIntExtra("children_count", 0)
-        val incomeLevel = if (intent.hasExtra("income_level")) intent.getIntExtra("income_level", 0) else null
-
-        val drawerHeader = binding.navigationView.getHeaderView(0)
-        val tvDrawerUserName = drawerHeader.findViewById<TextView>(R.id.tvDrawerUserName)
-        val tvDrawerUserInfo = drawerHeader.findViewById<TextView>(R.id.tvDrawerUserInfo)
-
-        if (username != null) {
-            binding.layoutHero.tvUserName.text = "${username}님"
-
-            val badgeText = when {
-                incomeLevel != null -> "자녀 ${childrenCount}명 · 소득분위 ${incomeLevel}"
-                childrenCount > 0   -> "자녀 ${childrenCount}명"
-                else                -> null
-            }
-            if (badgeText != null) {
-                binding.layoutHero.tvUserBadge.text = badgeText
-                binding.layoutHero.tvUserBadge.visibility = View.VISIBLE
-            } else {
-                binding.layoutHero.tvUserBadge.visibility = View.GONE
-            }
-
-            binding.layoutHeader.btnLogin.text = "${username}님"
-
-            tvDrawerUserName.text = "${username}님"
-            tvDrawerUserInfo.text = if (childrenCount > 0) "시흥시 · 자녀 ${childrenCount}명" else "시흥시"
-        } else {
-            binding.layoutHero.tvUserName.text = "시흥시 보호자님"
-            binding.layoutHero.tvUserBadge.visibility = View.GONE
-            binding.layoutHeader.btnLogin.text = "로그인"
-            tvDrawerUserName.text = "게스트"
-            tvDrawerUserInfo.text = "로그인 후 이용 가능합니다"
-        }
+    override fun onResume() {
+        super.onResume()
+        loadUserSummary()
     }
 
-    // ── 사이드 드로어 설정 ──────────────────────────────────────
     private fun setupDrawer() {
         binding.layoutHeader.btnMenu.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
+
         binding.layoutHeader.btnLogin.setOnClickListener {
-            navigateTo(LoginActivity::class.java)
+            if (isLoggedIn()) logout() else navigateTo(LoginActivity::class.java)
         }
+
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             when (menuItem.itemId) {
-                R.id.nav_home -> { /* 현재 화면 */ }
-                R.id.nav_benefits -> navigateTo(BenefitsActivity::class.java)
-                R.id.nav_reserve -> navigateTo(ReservationActivity::class.java)
-                R.id.nav_login -> navigateTo(LoginActivity::class.java)
-                R.id.nav_status -> navigateTo(ReservationStatusActivity::class.java)
-                R.id.nav_realtime -> navigateTo(RealtimeActivity::class.java)
+                R.id.nav_home -> Unit
+                R.id.nav_mypage -> navigateIfLoggedIn(MyPageActivity::class.java)
+                R.id.nav_benefits -> navigateIfLoggedIn(BenefitsActivity::class.java)
+                R.id.nav_reserve -> navigateIfLoggedIn(ReservationActivity::class.java)
+                R.id.nav_status -> navigateIfLoggedIn(ReservationStatusActivity::class.java)
+                R.id.nav_realtime -> navigateIfLoggedIn(RealtimeActivity::class.java)
             }
             true
         }
     }
 
-    // ── 4개 메뉴 카드 클릭 이벤트 ──────────────────────────────
     private fun setupMenuCards() {
         binding.layoutCards.cardBenefits.setOnClickListener {
-            navigateTo(BenefitsActivity::class.java)
+            navigateIfLoggedIn(BenefitsActivity::class.java)
         }
         binding.layoutCards.cardReserve.setOnClickListener {
-            navigateTo(ReservationActivity::class.java)
+            navigateIfLoggedIn(ReservationActivity::class.java)
         }
         binding.layoutCards.cardStatus.setOnClickListener {
-            navigateTo(ReservationStatusActivity::class.java)
+            navigateIfLoggedIn(ReservationStatusActivity::class.java)
         }
         binding.layoutCards.cardRealtime.setOnClickListener {
-            navigateTo(RealtimeActivity::class.java)
+            navigateIfLoggedIn(RealtimeActivity::class.java)
         }
     }
 
-    // ── 화면 전환 헬퍼 ────────────────────────────────────────
+    private fun resetSavedLoginOnAppStart() {
+        lifecycleScope.launch {
+            if (!AppSessionState.hasStartedInCurrentProcess && isLauncherStart()) {
+                AppSessionState.hasStartedInCurrentProcess = true
+                AppSessionState.isAuthenticatedInCurrentProcess = false
+                runCatching { SupabaseClientProvider.client.auth.signOut() }
+            }
+            loadUserSummary()
+        }
+    }
+
+    private fun isLauncherStart(): Boolean =
+        intent?.action == Intent.ACTION_MAIN &&
+            intent?.categories?.contains(Intent.CATEGORY_LAUNCHER) == true
+
+    private fun loadUserSummary() {
+        if (!AppSessionState.isAuthenticatedInCurrentProcess) {
+            userSummary = null
+            updateUserViews(null)
+            return
+        }
+
+        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id
+        if (userId.isNullOrBlank()) {
+            AppSessionState.isAuthenticatedInCurrentProcess = false
+            userSummary = null
+            updateUserViews(null)
+            return
+        }
+
+        lifecycleScope.launch {
+            val summary = try {
+                val user = SupabaseClientProvider.client.postgrest["users"]
+                    .select(Columns.raw("username")) {
+                        filter { eq("id", userId) }
+                    }
+                    .decodeSingleOrNull<MainUserRow>()
+
+                val children = SupabaseClientProvider.client.postgrest["children"]
+                    .select(Columns.raw("parent_id,income_level")) {
+                        filter { eq("parent_id", userId) }
+                    }
+                    .decodeList<MainChildRow>()
+
+                MainUserSummary(
+                    username = user?.username.orEmpty(),
+                    childCount = children.size,
+                    incomeLevel = children.mapNotNull { it.incomeLevel }.minOrNull()
+                )
+            } catch (e: Exception) {
+                null
+            }
+
+            userSummary = summary
+            updateUserViews(summary)
+        }
+    }
+
+    private fun updateUserViews(summary: MainUserSummary?) {
+        val drawerHeader = binding.navigationView.getHeaderView(0)
+        val drawerUserName = drawerHeader.findViewById<TextView>(R.id.tvDrawerUserName)
+        val drawerUserInfo = drawerHeader.findViewById<TextView>(R.id.tvDrawerUserInfo)
+
+        if (summary == null) {
+            binding.layoutHeader.btnLogin.text = "로그인"
+            binding.layoutHero.tvUserName.text = "로그인 해주세요"
+            binding.layoutHero.tvUserBadge.visibility = View.GONE
+            drawerUserName.text = "로그인 해주세요"
+            drawerUserInfo.visibility = View.GONE
+            return
+        }
+
+        val displayName = summary.username.ifBlank { "보호자" }
+        val badgeText = summary.conditionText()
+        binding.layoutHeader.btnLogin.text = "로그아웃"
+        binding.layoutHero.tvUserName.text = "${displayName}님"
+        binding.layoutHero.tvUserBadge.text = badgeText
+        binding.layoutHero.tvUserBadge.visibility = View.VISIBLE
+        drawerUserName.text = "${displayName}님"
+        drawerUserInfo.text = "시흥시 · 자녀 ${summary.childCount}명"
+        drawerUserInfo.visibility = View.VISIBLE
+    }
+
+    private fun isLoggedIn(): Boolean =
+        AppSessionState.isAuthenticatedInCurrentProcess &&
+            SupabaseClientProvider.client.auth.currentUserOrNull() != null
+
+    private fun <T> navigateIfLoggedIn(destination: Class<T>) {
+        if (!isLoggedIn()) {
+            showLoginRequired()
+            return
+        }
+        navigateTo(destination)
+    }
+
+    private fun showLoginRequired() {
+        Toast.makeText(this, "로그인 해주세요", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun logout() {
+        lifecycleScope.launch {
+            AppSessionState.isAuthenticatedInCurrentProcess = false
+            runCatching { SupabaseClientProvider.client.auth.signOut() }
+            userSummary = null
+            updateUserViews(null)
+            Toast.makeText(this@MainActivity, "로그아웃되었습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun <T> navigateTo(destination: Class<T>) {
         startActivity(Intent(this, destination))
     }
@@ -124,3 +211,27 @@ class MainActivity : AppCompatActivity() {
         })
     }
 }
+
+private data class MainUserSummary(
+    val username: String,
+    val childCount: Int,
+    val incomeLevel: Int?
+) {
+    fun conditionText(): String {
+        val incomeText = incomeLevel?.let { "소득분위 $it" } ?: "소득분위 미등록"
+        return "자녀 ${childCount}명 · $incomeText"
+    }
+}
+
+@Serializable
+private data class MainUserRow(
+    val username: String = ""
+)
+
+@Serializable
+private data class MainChildRow(
+    @SerialName("parent_id")
+    val parentId: String = "",
+    @SerialName("income_level")
+    val incomeLevel: Int? = null
+)
