@@ -459,43 +459,16 @@
                 android:textColor="@color/text_secondary"
                 android:layout_marginBottom="6dp" />
 
-            <LinearLayout
+            <EditText
+                android:id="@+id/etChildName"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <EditText
-                    android:id="@+id/etChildName"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:hint="이용 아동의 성명을 입력해주세요"
-                    android:inputType="textPersonName"
-                    android:textSize="14sp"
-                    android:paddingLeft="12dp"
-                    android:paddingRight="12dp"
-                    android:background="@drawable/bg_card_outline" />
-
-                <Button
-                    android:id="@+id/btnCheckDuplicate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="중복확인"
-                    android:textSize="12sp"
-                    android:layout_marginLeft="8dp"
-                    android:backgroundTint="@color/green_primary" />
-
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/tvDuplicateResult"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="12sp"
-                android:layout_marginTop="4dp"
-                android:visibility="gone" />
+                android:hint="이용 아동의 성명을 입력해주세요"
+                android:inputType="textPersonName"
+                android:textSize="14sp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:background="@drawable/bg_card_outline" />
 
             <!-- 생년월일 -->
             <TextView

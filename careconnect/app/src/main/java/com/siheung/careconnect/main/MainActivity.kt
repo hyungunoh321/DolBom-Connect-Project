@@ -21,7 +21,9 @@ import com.siheung.careconnect.reservation.ReservationStatusActivity
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -59,12 +61,13 @@ class MainActivity : AppCompatActivity() {
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             when (menuItem.itemId) {
-                R.id.nav_home -> Unit
-                R.id.nav_mypage -> navigateIfLoggedIn(MyPageActivity::class.java)
+                R.id.nav_home     -> Unit
+                R.id.nav_login    -> navigateTo(LoginActivity::class.java)
                 R.id.nav_benefits -> navigateIfLoggedIn(BenefitsActivity::class.java)
-                R.id.nav_reserve -> navigateIfLoggedIn(ReservationActivity::class.java)
-                R.id.nav_status -> navigateIfLoggedIn(ReservationStatusActivity::class.java)
+                R.id.nav_reserve  -> navigateIfLoggedIn(ReservationActivity::class.java)
+                R.id.nav_status   -> navigateIfLoggedIn(ReservationStatusActivity::class.java)
                 R.id.nav_realtime -> navigateIfLoggedIn(RealtimeActivity::class.java)
+                R.id.nav_mypage   -> navigateIfLoggedIn(MyPageActivity::class.java)
             }
             true
         }
@@ -117,17 +120,21 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val summary = try {
-                val user = SupabaseClientProvider.client.postgrest["users"]
-                    .select(Columns.raw("username")) {
-                        filter { eq("id", userId) }
-                    }
-                    .decodeSingleOrNull<MainUserRow>()
+                val user = withContext(Dispatchers.IO) {
+                    SupabaseClientProvider.client.postgrest["users"]
+                        .select(Columns.raw("username")) {
+                            filter { eq("id", userId) }
+                        }
+                        .decodeSingleOrNull<MainUserRow>()
+                }
 
-                val children = SupabaseClientProvider.client.postgrest["children"]
-                    .select(Columns.raw("parent_id,income_level")) {
-                        filter { eq("parent_id", userId) }
-                    }
-                    .decodeList<MainChildRow>()
+                val children = withContext(Dispatchers.IO) {
+                    SupabaseClientProvider.client.postgrest["children"]
+                        .select(Columns.raw("income_level")) {
+                            filter { eq("parent_id", userId) }
+                        }
+                        .decodeList<MainChildRow>()
+                }
 
                 MainUserSummary(
                     username = user?.username.orEmpty(),
@@ -224,14 +231,9 @@ private data class MainUserSummary(
 }
 
 @Serializable
-private data class MainUserRow(
-    val username: String = ""
-)
+private data class MainUserRow(val username: String = "")
 
 @Serializable
 private data class MainChildRow(
-    @SerialName("parent_id")
-    val parentId: String = "",
-    @SerialName("income_level")
-    val incomeLevel: Int? = null
+    @SerialName("income_level") val incomeLevel: Int? = null
 )

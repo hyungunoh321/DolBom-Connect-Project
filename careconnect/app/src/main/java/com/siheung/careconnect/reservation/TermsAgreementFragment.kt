@@ -17,7 +17,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class TermsAgreementFragment : Fragment() {
 
@@ -60,13 +64,24 @@ class TermsAgreementFragment : Fragment() {
             try {
                 val childId = getOrCreateChildId(currentUserId, fd)
 
+                val zone = ZoneId.of("Asia/Seoul")
+                val today = LocalDate.now(zone)
+                val startTime = today.atTime(LocalTime.of(fd.careStartHour, fd.careStartMin))
+                    .atZone(zone).toOffsetDateTime()
+                val endTime = today.atTime(LocalTime.of(fd.careEndHour, fd.careEndMin))
+                    .atZone(zone).toOffsetDateTime()
+                val fmt = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+
                 withContext(Dispatchers.IO) {
                     supabase.postgrest["reservations"].insert(
                         buildJsonObject {
                             put("parent_id", currentUserId)
                             put("facility_id", bookingActivity.facility.id)
                             put("child_id", childId)
-                            put("reserved_at", OffsetDateTime.now().toString())
+                            put("status", "대기")
+                            put("start_time", startTime.format(fmt))
+                            put("end_time", endTime.format(fmt))
+                            put("reserved_at", OffsetDateTime.now(zone).format(fmt))
                         }
                     )
                 }
@@ -91,7 +106,6 @@ class TermsAgreementFragment : Fragment() {
                     put("parent_id", userId)
                     put("name", fd.childName)
                     put("birth_date", fd.childBirthDate)
-                    put("gender", fd.childGender)
                 }
             )
         }
