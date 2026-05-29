@@ -1,0 +1,865 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/bg_secondary">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
+
+        <!-- Step Indicator -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:background="@color/white">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:text="✓"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_step_active" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="센터선택"
+                    android:textSize="10sp"
+                    android:textColor="@color/green_primary"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/green_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:text="✓"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_step_active" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="신청자/아동"
+                    android:textSize="10sp"
+                    android:textColor="@color/green_primary"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/green_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:text="3"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_step_active" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="기본정보"
+                    android:textSize="10sp"
+                    android:textColor="@color/green_primary"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/border_default" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:text="4"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:background="@drawable/bg_step_inactive" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="추가정보"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_hint"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/border_default" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:text="5"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:background="@drawable/bg_step_inactive" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="이용동의"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_hint"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 이용 아동 정보 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/bg_card_outline"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="이용 아동 정보 (필수)"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 성명 (readonly) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="성명 *"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="6dp" />
+            <EditText
+                android:id="@+id/etChildNameReadonly"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:enabled="false"
+                android:textSize="14sp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:background="@drawable/bg_card_outline"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 생년월일 (readonly) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="생년월일 *"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="6dp" />
+            <EditText
+                android:id="@+id/etBirthDateReadonly"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:enabled="false"
+                android:textSize="14sp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:background="@drawable/bg_card_outline"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 성별 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="성별 *"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="6dp" />
+            <RadioGroup
+                android:id="@+id/rgGender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+                <RadioButton
+                    android:id="@+id/rbMale"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="남"
+                    android:checked="true"
+                    android:buttonTint="@color/green_primary"
+                    android:layout_marginRight="16dp" />
+                <RadioButton
+                    android:id="@+id/rbFemale"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="여"
+                    android:buttonTint="@color/green_primary" />
+            </RadioGroup>
+
+            <!-- 연락처 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="연락처"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="6dp" />
+            <EditText
+                android:id="@+id/etChildPhone"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="예시) 010-0000-0000"
+                android:inputType="phone"
+                android:textSize="14sp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:background="@drawable/bg_card_outline"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 학교 정보 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="학교 정보 *"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="6dp" />
+            <CheckBox
+                android:id="@+id/cbSchoolSameAsCenter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="센터와 동일한 학교를 다닐 경우 체크해주세요"
+                android:textSize="13sp"
+                android:buttonTint="@color/green_primary"
+                android:layout_marginBottom="8dp" />
+            <LinearLayout
+                android:id="@+id/layoutSchoolDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+                <EditText
+                    android:id="@+id/etSchoolName"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="3"
+                    android:hint="학교명"
+                    android:textSize="13sp"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="12dp"
+                    android:background="@drawable/bg_card_outline"
+                    android:layout_marginRight="4dp" />
+                <EditText
+                    android:id="@+id/etGrade"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1.5"
+                    android:hint="학년"
+                    android:inputType="number"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:background="@drawable/bg_card_outline"
+                    android:layout_marginRight="4dp" />
+                <EditText
+                    android:id="@+id/etClass"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1.5"
+                    android:hint="반"
+                    android:inputType="number"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:background="@drawable/bg_card_outline" />
+            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="· 학년/반 배정 전이라면 임의로 등록해주세요. 예시) 3학년 0반, 2학년 미배정"
+                android:textSize="11sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 건강상태 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="건강상태 *"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="6dp" />
+            <RadioGroup
+                android:id="@+id/rgHealth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <RadioButton
+                    android:id="@+id/rbHealthGood"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="양호"
+                    android:checked="true"
+                    android:buttonTint="@color/green_primary"
+                    android:layout_marginRight="12dp" />
+                <RadioButton
+                    android:id="@+id/rbHealthNormal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="보통"
+                    android:buttonTint="@color/green_primary"
+                    android:layout_marginRight="12dp" />
+                <RadioButton
+                    android:id="@+id/rbHealthWeak"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="허약"
+                    android:buttonTint="@color/green_primary"
+                    android:layout_marginRight="12dp" />
+                <RadioButton
+                    android:id="@+id/rbHealthOther"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="기타"
+                    android:buttonTint="@color/green_primary" />
+            </RadioGroup>
+            <EditText
+                android:id="@+id/etHealthNote"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="건강 상태를 입력해주세요"
+                android:textSize="14sp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:background="@drawable/bg_card_outline"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 주소 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="주소 *"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="6dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+                <EditText
+                    android:id="@+id/etAddressMain"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:hint="우편번호로 주소를 입력해주세요"
+                    android:textSize="13sp"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="12dp"
+                    android:background="@drawable/bg_card_outline"
+                    android:layout_marginRight="8dp" />
+                <Button
+                    android:id="@+id/btnPostcode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="우편번호 검색"
+                    android:textSize="12sp"
+                    android:backgroundTint="@color/green_primary" />
+            </LinearLayout>
+            <EditText
+                android:id="@+id/etAddressDetail"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="상세 주소를 입력해주세요"
+                android:textSize="14sp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:background="@drawable/bg_card_outline" />
+
+        </LinearLayout>
+
+        <!-- 보호자 정보 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/bg_card_outline"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="보호자 정보 (필수)"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+                <Button
+                    android:id="@+id/btnAddGuardian"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="+ 보호자 추가"
+                    android:textSize="12sp"
+                    android:backgroundTint="@color/green_primary" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="· 보호자는 1명 이상 반드시 입력해야 합니다.\n· 성명, 관계, 전화번호가 모두 입력된 보호자 정보만 신청서에 저장됩니다."
+                android:textSize="11sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginBottom="12dp" />
+
+            <!-- 보호자 행 헤더 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="4dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2.5"
+                    android:text="성명"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="center" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.5"
+                    android:text="관계"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="center" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="3"
+                    android:text="전화번호"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <!-- 동적 보호자 행 컨테이너 -->
+            <LinearLayout
+                android:id="@+id/llGuardianRows"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+
+        <!-- 돌봄 서비스 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/bg_card_outline"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="돌봄 서비스 (필수)"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 필요 요일 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="필요 요일 *"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="8dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+                <CheckBox
+                    android:id="@+id/cbDayAll"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="전체"
+                    android:textSize="12sp"
+                    android:buttonTint="@color/green_primary" />
+                <CheckBox
+                    android:id="@+id/cbDayMon"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="월"
+                    android:textSize="12sp"
+                    android:buttonTint="@color/green_primary" />
+                <CheckBox
+                    android:id="@+id/cbDayTue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="화"
+                    android:textSize="12sp"
+                    android:buttonTint="@color/green_primary" />
+                <CheckBox
+                    android:id="@+id/cbDayWed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="수"
+                    android:textSize="12sp"
+                    android:buttonTint="@color/green_primary" />
+                <CheckBox
+                    android:id="@+id/cbDayThu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="목"
+                    android:textSize="12sp"
+                    android:buttonTint="@color/green_primary" />
+                <CheckBox
+                    android:id="@+id/cbDayFri"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="금"
+                    android:textSize="12sp"
+                    android:buttonTint="@color/green_primary" />
+            </LinearLayout>
+
+            <!-- 필요 시간 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="필요 시간 *"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="8dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="정기 돌봄"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginRight="8dp" />
+                <Spinner
+                    android:id="@+id/spinnerStartHour"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_card_outline" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="시"
+                    android:textSize="13sp"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginRight="4dp" />
+                <Spinner
+                    android:id="@+id/spinnerStartMin"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_card_outline" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="분  ~"
+                    android:textSize="13sp"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginRight="4dp" />
+                <Spinner
+                    android:id="@+id/spinnerEndHour"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_card_outline" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="시"
+                    android:textSize="13sp"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginRight="4dp" />
+                <Spinner
+                    android:id="@+id/spinnerEndMin"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_card_outline" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="분"
+                    android:textSize="13sp"
+                    android:layout_marginLeft="2dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 연계기관 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/bg_card_outline"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="연계기관 (선택)"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+                <Button
+                    android:id="@+id/btnAddOrg"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="+ 연계기관 추가"
+                    android:textSize="12sp"
+                    android:backgroundTint="@color/green_primary" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="· 센터 입실 전후 또는 이용 도중 다른 기관(학원 등) 이용사항을 기재해주세요.\n· 기관명, 담당자, 연락처가 모두 입력된 기관 정보만 신청서에 저장됩니다."
+                android:textSize="11sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginBottom="12dp" />
+
+            <!-- 연계기관 행 헤더 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="4dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="기관명"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="center" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.5"
+                    android:text="담당자"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="center" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="연락처"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="center" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.5"
+                    android:text="비고"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <!-- 동적 연계기관 행 컨테이너 -->
+            <LinearLayout
+                android:id="@+id/llOrgRows"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+
+        <!-- 아동관련 참고사항 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/bg_card_outline"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="아동관련 참고사항 (선택)"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="· 아동 돌봄 시 주의해야 할 사항(특이 체질, 복용하는 약 등)을 기재해주세요."
+                android:textSize="11sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etChildNotes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="참고사항"
+                android:minLines="5"
+                android:gravity="top"
+                android:textSize="14sp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="@drawable/bg_card_outline"
+                android:inputType="textMultiLine" />
+
+        </LinearLayout>
+
+        <!-- 네비게이션 버튼 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp">
+
+            <Button
+                android:id="@+id/btnPrevStep"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="이전단계로 이동"
+                android:textSize="14sp"
+                android:layout_marginRight="8dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+            <Button
+                android:id="@+id/btnNextStep"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="다음단계로 이동"
+                android:textSize="14sp"
+                android:backgroundTint="@color/green_primary" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

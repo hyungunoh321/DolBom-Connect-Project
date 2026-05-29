@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/bg_secondary">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
+
+        <!-- Step Indicator -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:background="@color/white">
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="32dp" android:layout_height="32dp" android:text="✓" android:gravity="center" android:textColor="@color/white" android:textSize="14sp" android:textStyle="bold" android:background="@drawable/bg_step_active" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="센터선택" android:textSize="10sp" android:textColor="@color/green_primary" android:layout_marginTop="4dp" />
+            </LinearLayout>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/green_primary" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="32dp" android:layout_height="32dp" android:text="✓" android:gravity="center" android:textColor="@color/white" android:textSize="14sp" android:textStyle="bold" android:background="@drawable/bg_step_active" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="신청자/아동" android:textSize="10sp" android:textColor="@color/green_primary" android:layout_marginTop="4dp" />
+            </LinearLayout>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/green_primary" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="32dp" android:layout_height="32dp" android:text="✓" android:gravity="center" android:textColor="@color/white" android:textSize="14sp" android:textStyle="bold" android:background="@drawable/bg_step_active" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="기본정보" android:textSize="10sp" android:textColor="@color/green_primary" android:layout_marginTop="4dp" />
+            </LinearLayout>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/green_primary" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="32dp" android:layout_height="32dp" android:text="✓" android:gravity="center" android:textColor="@color/white" android:textSize="14sp" android:textStyle="bold" android:background="@drawable/bg_step_active" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="추가정보" android:textSize="10sp" android:textColor="@color/green_primary" android:layout_marginTop="4dp" />
+            </LinearLayout>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.3" android:background="@color/green_primary" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="32dp" android:layout_height="32dp" android:text="5" android:gravity="center" android:textColor="@color/white" android:textSize="14sp" android:textStyle="bold" android:background="@drawable/bg_step_active" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="이용동의" android:textSize="10sp" android:textColor="@color/green_primary" android:textStyle="bold" android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 이용동의 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/bg_card_outline"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="이용 동의"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 개인정보 수집·이용 동의 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <CheckBox
+                    android:id="@+id/cbAgreePersonalInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="[필수] 개인정보 수집·이용 동의"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:buttonTint="@color/green_primary"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="돌봄 서비스 신청을 위해 아래와 같이 개인정보를 수집·이용합니다.\n\n수집 항목: 성명, 생년월일, 연락처, 주소, 가족관계\n수집 목적: 돌봄 서비스 신청 및 운영\n보유 기간: 서비스 이용 종료 후 3년"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:background="@color/bg_secondary"
+                    android:padding="12dp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 서비스 이용약관 동의 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <CheckBox
+                    android:id="@+id/cbAgreeTerms"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="[필수] 서비스 이용약관 동의"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:buttonTint="@color/green_primary"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="돌봄 커넥트 서비스 이용약관에 동의합니다.\n\n제1조 서비스 목적: 본 서비스는 시흥시 보육 기관과 보호자를 연결하는 플랫폼을 제공합니다.\n제2조 이용자 의무: 이용자는 정확한 정보를 입력해야 하며, 허위 정보 입력 시 서비스 이용이 제한될 수 있습니다.\n제3조 서비스 변경: 시흥시의 사정에 따라 서비스 내용이 변경될 수 있습니다."
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:background="@color/bg_secondary"
+                    android:padding="12dp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 마케팅 수신 동의 -->
+            <CheckBox
+                android:id="@+id/cbAgreeMarketing"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="[선택] 서비스 안내 및 혜택 정보 수신 동의"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:buttonTint="@color/green_primary" />
+
+        </LinearLayout>
+
+        <!-- 이전 / 신청완료 버튼 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp">
+
+            <Button
+                android:id="@+id/btnPrevStep"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="이전단계로 이동"
+                android:textSize="14sp"
+                android:layout_marginRight="8dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+            <Button
+                android:id="@+id/btnSubmit"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="신청 완료"
+                android:textSize="14sp"
+                android:enabled="false"
+                android:backgroundTint="@color/green_primary" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

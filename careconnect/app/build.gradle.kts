@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.android.application)
     kotlin("plugin.serialization") version "1.9.0"
     id("com.google.gms.google-services")
-
 }
 
 // local.properties에서 키를 미리 읽어옴
@@ -77,16 +76,20 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:auth-kt")
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
     implementation("io.github.jan-tennert.supabase:realtime-kt")
+    implementation("io.github.jan-tennert.supabase:storage-kt")
 
-// Ktor
+    // Ktor
     implementation("io.ktor:ktor-client-android:3.0.0")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation("com.google.firebase:firebase-messaging-ktx")
 
     implementation("io.github.jan-tennert.supabase:functions-kt")
-
-
-
 }
