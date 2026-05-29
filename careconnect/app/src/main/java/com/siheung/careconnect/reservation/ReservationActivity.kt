@@ -75,7 +75,6 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
                     SupabaseClientProvider.client.postgrest["facilities"]
                         .select()
                         .decodeList<ChildcareFacility>()
-                        .filter { it.managerId != null }
                 }
                 facilities.clear()
                 facilities.addAll(loaded)

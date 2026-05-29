@@ -42,8 +42,12 @@ class FacilityAdapter(
             holder.tvDistance.text = "거리 정보 없음"
         }
 
+        val canReserve = item.managerId != null
+        holder.tvStatus.text = if (canReserve) item.status else "준비 중"
+        holder.btnReserve.isEnabled = canReserve
+
         holder.itemView.setOnClickListener { onItemClick(item) }
-        holder.btnReserve.setOnClickListener { onReserveClick(item) }
+        holder.btnReserve.setOnClickListener { if (canReserve) onReserveClick(item) }
     }
 
     override fun getItemCount(): Int = items.size
