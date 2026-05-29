@@ -104,6 +104,9 @@ class BasicInfoFragment : Fragment() {
     private fun addOrgRow() {
         val row = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_org_row, binding.llOrgRows, false)
+        row.findViewById<android.widget.ImageButton>(R.id.btnRemoveOrg).setOnClickListener {
+            binding.llOrgRows.removeView(row)
+        }
         binding.llOrgRows.addView(row)
     }
 
