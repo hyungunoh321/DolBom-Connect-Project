@@ -87,6 +87,19 @@
             android:gravity="end">
 
             <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_icon_blue"
+                android:text="취소"
+                android:textColor="#F44336"
+                android:textSize="13sp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:visibility="gone" />
+
+            <Button
                 android:id="@+id/btnConfirm"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"

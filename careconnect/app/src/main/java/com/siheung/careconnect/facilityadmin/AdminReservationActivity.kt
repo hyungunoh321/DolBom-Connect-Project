@@ -167,8 +167,13 @@ class AdminReservationActivity : AppCompatActivity() {
                         }
                         val fcmToken = tokenRow?.fcmToken
                         if (!fcmToken.isNullOrEmpty()) {
-                            val title = if (newStatus == "확정") "예약이 확정되었습니다" else "예약이 완료되었습니다"
-                            val body  = "${reservation.childName} 아동의 예약이 $newStatus 처리되었습니다."
+                            val title = when (newStatus) {
+                                "확정" -> "예약이 확정되었습니다"
+                                "완료" -> "예약이 완료되었습니다"
+                                "취소" -> "예약이 취소되었습니다"
+                                else   -> "예약 상태가 변경되었습니다"
+                            }
+                            val body = "${reservation.childName} 아동의 예약이 $newStatus 처리되었습니다."
                             NotificationHelper.sendNotification(fcmToken, title, body)
                         }
                     } catch (_: Exception) { }
@@ -239,6 +244,7 @@ class AdminReservationAdapter(
         private val tvChildName: TextView = itemView.findViewById(R.id.tvChildName)
         private val tvTimeRange: TextView = itemView.findViewById(R.id.tvTimeRange)
         private val tvStatus:    TextView = itemView.findViewById(R.id.tvStatus)
+        private val btnCancel:   Button   = itemView.findViewById(R.id.btnCancel)
         private val btnConfirm:  Button   = itemView.findViewById(R.id.btnConfirm)
         private val btnComplete: Button   = itemView.findViewById(R.id.btnComplete)
 
@@ -252,14 +258,19 @@ class AdminReservationAdapter(
                 "대기" -> Pair(R.color.amber_light,  R.color.amber_primary)
                 "확정" -> Pair(R.color.green_light,  R.color.green_primary)
                 "완료" -> Pair(R.color.bg_secondary, R.color.text_secondary)
+                "취소" -> Pair(R.color.bg_secondary, R.color.text_secondary)
                 else   -> Pair(R.color.bg_secondary, R.color.text_secondary)
             }
             tvStatus.setBackgroundColor(ContextCompat.getColor(itemView.context, bgColor))
             tvStatus.setTextColor(ContextCompat.getColor(itemView.context, textColor))
 
+            // 취소 버튼: 대기·확정 상태에서만 표시
+            val cancellable = res.status == "대기" || res.status == "확정"
+            btnCancel.visibility   = if (cancellable) View.VISIBLE else View.GONE
             btnConfirm.visibility  = if (res.status == "대기") View.VISIBLE else View.GONE
             btnComplete.visibility = if (res.status == "확정") View.VISIBLE else View.GONE
 
+            btnCancel.setOnClickListener   { onStatusChange(res, "취소") }
             btnConfirm.setOnClickListener  { onStatusChange(res, "확정") }
             btnComplete.setOnClickListener { onStatusChange(res, "완료") }
         }
