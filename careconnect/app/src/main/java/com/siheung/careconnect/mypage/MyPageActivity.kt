@@ -23,6 +23,8 @@ class MyPageActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMyPageBinding
     private var childExists = false
+    private var childCount = 0          // 현재 자녀 수 (프로필 카드 갱신용)
+    private var cachedUsername = ""     // 저장 후 프로필 카드 재구성용
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,13 +74,14 @@ class MyPageActivity : AppCompatActivity() {
 
             val firstChild = children.firstOrNull()
             childExists = firstChild != null
+            childCount = children.size
 
-            val username = user?.username.orEmpty().ifBlank { "보호자" }
+            cachedUsername = user?.username.orEmpty().ifBlank { "보호자" }
             val incomeLevel = children.mapNotNull { it.incomeLevel }.minOrNull()
             val incomeText = incomeLevel?.let { "소득분위 $it" } ?: "소득분위 미등록"
 
-            binding.tvProfileName.text = "${username}님"
-            binding.tvProfileInfo.text = "자녀 ${children.size}명 · $incomeText"
+            binding.tvProfileName.text = "${cachedUsername}님"
+            binding.tvProfileInfo.text = "자녀 ${childCount}명 · $incomeText"
             binding.tvProfileEmail.text = user?.email.orEmpty()
             binding.etChildName.setText(firstChild?.name.orEmpty())
             binding.etChildBirthDate.setText(firstChild?.birthDate.orEmpty())
@@ -160,11 +163,18 @@ class MyPageActivity : AppCompatActivity() {
                         put("income_level", incomeLevel)
                     }
                     SupabaseClientProvider.client.postgrest["children"].insert(insertJson)
+                    // 신규 등록 → 자녀 수 증가 및 존재 플래그 설정
                     childExists = true
+                    childCount++
                 }
 
+                // 서버 재조회 없이 입력값으로 즉시 UI 갱신
+                binding.etChildName.setText(childName)
+                binding.etChildBirthDate.setText(birthDate)
+                binding.etIncomeLevel.setText(incomeLevel.toString())
+                binding.tvProfileInfo.text = "자녀 ${childCount}명 · 소득분위 $incomeLevel"
+
                 Toast.makeText(this@MyPageActivity, "아이 정보가 저장되었습니다.", Toast.LENGTH_SHORT).show()
-                loadMyPage()
             } catch (e: Exception) {
                 Toast.makeText(this@MyPageActivity, "저장 실패: ${e.message}", Toast.LENGTH_LONG).show()
             }
