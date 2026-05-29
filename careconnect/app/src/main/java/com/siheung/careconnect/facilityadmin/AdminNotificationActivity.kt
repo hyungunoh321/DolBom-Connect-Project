@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.siheung.careconnect.NotificationHelper
 import com.siheung.careconnect.databinding.ActivityAdminNotificationBinding
 import com.siheung.careconnect.login.SupabaseClientProvider
 import io.github.jan.supabase.postgrest.postgrest
@@ -67,7 +68,6 @@ class AdminNotificationActivity : AppCompatActivity() {
             try {
                 val result = withContext(Dispatchers.IO) {
                     if (facilityId.isNotEmpty()) {
-                        // 이 시설에 예약된 아동만 조회
                         SupabaseClientProvider.client.postgrest["reservations"]
                             .select(Columns.raw("id, children(id, name, parent_id)")) {
                                 filter { eq("facility_id", facilityId) }
@@ -76,7 +76,6 @@ class AdminNotificationActivity : AppCompatActivity() {
                             .mapNotNull { it.children }
                             .distinctBy { it.id }
                     } else {
-                        // facilityId 없으면 전체 아동 조회
                         SupabaseClientProvider.client.postgrest["children"]
                             .select()
                             .decodeList<ChildNotifItem>()
@@ -90,11 +89,10 @@ class AdminNotificationActivity : AppCompatActivity() {
                     binding.spinnerChild.visibility = View.GONE
                     binding.tvNoChildren.visibility = View.VISIBLE
                 } else {
-                    val names = children.map { it.name }
                     val adapter = ArrayAdapter(
                         this@AdminNotificationActivity,
                         android.R.layout.simple_spinner_item,
-                        names
+                        children.map { it.name }
                     )
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     binding.spinnerChild.adapter = adapter
@@ -113,7 +111,8 @@ class AdminNotificationActivity : AppCompatActivity() {
             Toast.makeText(this, "메시지를 입력해주세요", Toast.LENGTH_SHORT).show()
             return
         }
-        if (children.isEmpty()) {
+        val selectedChild = children.getOrNull(binding.spinnerChild.selectedItemPosition)
+        if (selectedChild == null) {
             Toast.makeText(this, "알림을 받을 아동이 없습니다", Toast.LENGTH_SHORT).show()
             return
         }
@@ -123,13 +122,10 @@ class AdminNotificationActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                // 이미지 업로드 (선택된 경우)
                 val imageUrl = selectedImageUri?.let { uploadImage(it) }
 
-                // 최종 메시지 구성
-                val fullText = buildString {
-                    val selectedChild = children.getOrNull(binding.spinnerChild.selectedItemPosition)
-                    if (selectedChild != null) append("[${selectedChild.name}] ")
+                val noticeText = buildString {
+                    append("[${selectedChild.name}] ")
                     append(message)
                     if (imageUrl != null) append("\n$imageUrl")
                 }
@@ -139,11 +135,35 @@ class AdminNotificationActivity : AppCompatActivity() {
                 withContext(Dispatchers.IO) {
                     SupabaseClientProvider.client.postgrest["notices"].insert(
                         buildJsonObject {
-                            put("text", fullText)
+                            put("text", noticeText)
                             put("date", today)
                             put("is_read", false)
                         }
                     )
+                }
+
+                // 부모 FCM 토큰 조회 후 푸시 발송
+                if (selectedChild.parentId != null) {
+                    val fcmToken = withContext(Dispatchers.IO) {
+                        SupabaseClientProvider.client.postgrest["users"]
+                            .select(Columns.raw("fcm_token")) {
+                                filter { eq("id", selectedChild.parentId) }
+                            }
+                            .decodeSingleOrNull<FcmTokenRow>()
+                            ?.fcmToken
+                    }
+
+                    if (!fcmToken.isNullOrEmpty()) {
+                        try {
+                            NotificationHelper.sendNotification(
+                                fcmToken = fcmToken,
+                                title = "보육원 알림",
+                                body = "[${selectedChild.name}] $message"
+                            )
+                        } catch (_: Exception) {
+                            // DB 저장은 완료됐으므로 push 실패는 무시
+                        }
+                    }
                 }
 
                 Toast.makeText(this@AdminNotificationActivity, "알림이 전송되었습니다", Toast.LENGTH_SHORT).show()
@@ -165,8 +185,7 @@ class AdminNotificationActivity : AppCompatActivity() {
                 val fileName = "${UUID.randomUUID()}.$ext"
                 SupabaseClientProvider.client.storage["notice-images"].upload(fileName, bytes)
                 SupabaseClientProvider.client.storage["notice-images"].publicUrl(fileName)
-            } catch (e: Exception) {
-                // Storage 버킷이 없거나 업로드 실패 시 이미지 없이 진행
+            } catch (_: Exception) {
                 null
             }
         }
@@ -181,6 +200,11 @@ class AdminNotificationActivity : AppCompatActivity() {
 private data class ReservationChildRow(
     val id: String = "",
     val children: ChildNotifItem? = null
+)
+
+@Serializable
+private data class FcmTokenRow(
+    @SerialName("fcm_token") val fcmToken: String? = null
 )
 
 @Serializable
