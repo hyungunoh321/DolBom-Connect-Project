@@ -176,14 +176,17 @@ class MainActivity : AppCompatActivity() {
         val drawerUserName = drawerHeader.findViewById<TextView>(R.id.tvDrawerUserName)
         val drawerUserInfo = drawerHeader.findViewById<TextView>(R.id.tvDrawerUserInfo)
 
+        val navMenu = binding.navigationView.menu
         if (summary == null) {
             binding.layoutHeader.btnLogin.text = "로그인"
             binding.layoutHero.tvUserName.text = "로그인 해주세요"
             binding.layoutHero.tvUserBadge.visibility = View.GONE
             drawerUserName.text = "로그인 해주세요"
             drawerUserInfo.visibility = View.GONE
+            navMenu.findItem(R.id.nav_login)?.isVisible = true
             return
         }
+        navMenu.findItem(R.id.nav_login)?.isVisible = false
 
         val displayName = summary.username.ifBlank { "보호자" }
         val badgeText = summary.conditionText()

@@ -1,9 +1,16 @@
 package com.siheung.careconnect.facilityadmin
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
+import androidx.lifecycle.lifecycleScope
 import com.siheung.careconnect.databinding.ActivityAdminMainBinding
+import com.siheung.careconnect.login.LoginActivity
+import com.siheung.careconnect.login.SupabaseClientProvider
+import com.siheung.careconnect.main.AppSessionState
+import io.github.jan.supabase.auth.auth
+import kotlinx.coroutines.launch
 
 class AdminMainActivity : AppCompatActivity() {
 
@@ -21,9 +28,19 @@ class AdminMainActivity : AppCompatActivity() {
         setupMenuCards()
     }
 
-    // ── 툴바 (뒤로가기) ──────────────────────────────────────
+    // ── 툴바 ──────────────────────────────────────────────────
     private fun setupToolbar() {
         binding.btnBack.setOnClickListener { finish() }
+        binding.btnLogout.setOnClickListener {
+            lifecycleScope.launch {
+                AppSessionState.isAuthenticatedInCurrentProcess = false
+                runCatching { SupabaseClientProvider.client.auth.signOut() }
+                Toast.makeText(this@AdminMainActivity, "로그아웃되었습니다.", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this@AdminMainActivity, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+        }
     }
 
     // ── 3개 메뉴 카드 클릭 이벤트 ────────────────────────────

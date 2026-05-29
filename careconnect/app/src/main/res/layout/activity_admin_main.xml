@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:paddingStart="8dp"
-            android:paddingEnd="16dp">
+            android:paddingEnd="8dp">
 
             <ImageButton
                 android:id="@+id/btnBack"
@@ -53,6 +53,20 @@
                     android:textColor="#BDFFF0"
                     android:textSize="11sp" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnLogout"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_gravity="end"
+                android:background="@drawable/bg_login_btn"
+                android:gravity="center"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="로그아웃"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 

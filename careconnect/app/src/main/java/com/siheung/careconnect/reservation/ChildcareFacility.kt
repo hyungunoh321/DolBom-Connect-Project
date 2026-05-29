@@ -2,6 +2,7 @@ package com.siheung.careconnect.reservation
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.clustering.ClusterItem
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -13,6 +14,7 @@ data class ChildcareFacility(
     val latitude: Double,
     val longitude: Double,
     val district: String = "",
+    @SerialName("manager_id") val managerId: String? = null,
     @Transient var phone: String = "",
     @Transient val status: String = "예약 가능",
     @Transient var distance: Float = 0f
