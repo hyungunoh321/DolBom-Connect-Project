@@ -97,14 +97,23 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setupUI() {
         binding.btnBack.setOnClickListener { finish() }
 
+        // 바텀시트 상태 변화 시에만 지도 패딩을 업데이트합니다.
+        // onSlide(매 프레임마다 호출)에서 setPadding을 하면 지도 카메라가
+        // 계속 재조정되어 튕기는 현상이 발생하므로 사용하지 않습니다.
         val behavior = BottomSheetBehavior.from(binding.bottomSheet)
         behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: android.view.View, newState: Int) {}
-            override fun onSlide(bottomSheet: android.view.View, slideOffset: Float) {
-                val padding = (slideOffset * 500).toInt().coerceAtLeast(0)
-                if (::mMap.isInitialized) {
-                    mMap.setPadding(0, 0, 0, padding + 200)
+            override fun onStateChanged(bottomSheet: android.view.View, newState: Int) {
+                if (!::mMap.isInitialized) return
+                when (newState) {
+                    BottomSheetBehavior.STATE_EXPANDED ->
+                        mMap.setPadding(0, 0, 0, 0)
+                    BottomSheetBehavior.STATE_COLLAPSED ->
+                        mMap.setPadding(0, 0, 0, behavior.peekHeight)
+                    else -> { /* 전환 중에는 패딩 변경하지 않음 */ }
                 }
+            }
+            override fun onSlide(bottomSheet: android.view.View, slideOffset: Float) {
+                // 의도적으로 비워 둠 — 슬라이드 중 setPadding 호출 금지
             }
         })
     }
@@ -267,6 +276,12 @@ class ReservationActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+
+        // 바텀시트 collapsed 상태의 peek 높이만큼 하단 패딩을 고정으로 설정.
+        // 이후 setState 변화 시에만 패딩을 갱신해 카메라 재조정이 일어나지 않게 합니다.
+        val peekHeight = BottomSheetBehavior.from(binding.bottomSheet).peekHeight
+        mMap.setPadding(0, 0, 0, peekHeight)
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(siheungCenter, 13f))
         setupClusterManager()
         updateLocationUI()

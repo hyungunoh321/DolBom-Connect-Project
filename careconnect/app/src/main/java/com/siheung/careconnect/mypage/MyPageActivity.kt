@@ -141,26 +141,32 @@ class MyPageActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val childJson = buildJsonObject {
-                    put("parent_id", userId)
+                val updateJson = buildJsonObject {
                     put("name", childName)
                     put("birth_date", birthDate)
                     put("income_level", incomeLevel)
                 }
 
                 if (childExists) {
-                    SupabaseClientProvider.client.postgrest["children"].update(childJson) {
-                        filter { eq("parent_id", userId) }
-                    }
+                    SupabaseClientProvider.client.postgrest["children"]
+                        .update(updateJson) {
+                            filter { eq("parent_id", userId) }
+                        }
                 } else {
-                    SupabaseClientProvider.client.postgrest["children"].insert(childJson)
+                    val insertJson = buildJsonObject {
+                        put("parent_id", userId)
+                        put("name", childName)
+                        put("birth_date", birthDate)
+                        put("income_level", incomeLevel)
+                    }
+                    SupabaseClientProvider.client.postgrest["children"].insert(insertJson)
                     childExists = true
                 }
 
                 Toast.makeText(this@MyPageActivity, "아이 정보가 저장되었습니다.", Toast.LENGTH_SHORT).show()
                 loadMyPage()
             } catch (e: Exception) {
-                Toast.makeText(this@MyPageActivity, "아이 정보 저장에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MyPageActivity, "저장 실패: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

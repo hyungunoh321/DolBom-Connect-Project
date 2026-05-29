@@ -91,6 +91,13 @@ class BasicInfoFragment : Fragment() {
             android.R.layout.simple_spinner_item,
             relationOptions
         ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+        row.findViewById<android.widget.ImageButton>(R.id.btnRemoveGuardian).setOnClickListener {
+            if (binding.llGuardianRows.childCount > 1) {
+                binding.llGuardianRows.removeView(row)
+            } else {
+                Toast.makeText(requireContext(), "보호자 정보는 최소 1개 이상 필요합니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
         binding.llGuardianRows.addView(row)
     }
 
