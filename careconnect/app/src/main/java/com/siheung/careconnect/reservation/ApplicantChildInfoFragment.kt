@@ -12,7 +12,6 @@ import com.siheung.careconnect.databinding.FragmentApplicantChildInfoBinding
 import com.siheung.careconnect.login.SupabaseClientProvider
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,7 +36,6 @@ class ApplicantChildInfoFragment : Fragment() {
     private val bookingActivity get() = requireActivity() as BookingActivity
 
     private var isPhoneVerified = false
-    private var isDuplicateChecked = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,7 +52,6 @@ class ApplicantChildInfoFragment : Fragment() {
         bindFacilityInfo()
         prefillApplicantName()
         setupPhoneVerification()
-        setupDuplicateCheck()
         setupNavigation()
     }
 
@@ -111,48 +108,6 @@ class ApplicantChildInfoFragment : Fragment() {
         }
     }
 
-    private fun setupDuplicateCheck() {
-        binding.btnCheckDuplicate.setOnClickListener {
-            val childName = binding.etChildName.text.toString().trim()
-            if (childName.isEmpty()) {
-                Toast.makeText(requireContext(), "아동 성명을 먼저 입력해주세요", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id
-            if (userId == null) {
-                Toast.makeText(requireContext(), "로그인이 필요합니다", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            viewLifecycleOwner.lifecycleScope.launch {
-                try {
-                    val existing = withContext(Dispatchers.IO) {
-                        SupabaseClientProvider.client.postgrest["children"]
-                            .select {
-                                filter {
-                                    eq("parent_id", userId)
-                                    eq("name", childName)
-                                }
-                            }
-                            .decodeList<ChildItem>()
-                    }
-                    binding.tvDuplicateResult.isVisible = true
-                    if (existing.isNotEmpty()) {
-                        isDuplicateChecked = false
-                        binding.tvDuplicateResult.text = "이미 등록된 아동입니다"
-                        binding.tvDuplicateResult.setTextColor(requireContext().getColor(android.R.color.holo_red_light))
-                    } else {
-                        isDuplicateChecked = true
-                        binding.tvDuplicateResult.text = "신청이 가능합니다"
-                        binding.tvDuplicateResult.setTextColor(requireContext().getColor(android.R.color.holo_green_dark))
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "확인 중 오류가 발생했습니다", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
     private fun setupNavigation() {
         binding.btnPrevStep.setOnClickListener {
             bookingActivity.goToPrevStep(2)
@@ -188,10 +143,6 @@ class ApplicantChildInfoFragment : Fragment() {
         }
         if (binding.etChildName.text.toString().isBlank()) {
             Toast.makeText(requireContext(), "아동 성명을 입력해주세요", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        if (!isDuplicateChecked) {
-            Toast.makeText(requireContext(), "아동 중복확인을 완료해주세요", Toast.LENGTH_SHORT).show()
             return false
         }
         val birthDate = binding.etBirthDate.text.toString().trim()
