@@ -9,6 +9,9 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.siheung.careconnect.R
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class ReservationStatusAdapter(
     private val onCancelClick: (ReservationItem) -> Unit
@@ -39,14 +42,24 @@ class ReservationStatusAdapter(
         holder.tvFacilityAddress.text = item.facilities?.address ?: ""
         holder.tvChildName.text = item.children?.name ?: "정보 없음"
 
-        // "2024-12-05T10:30:00" → "2024년 12월 5일"
-        val dateFormatted = try {
-            val parts = item.reserved_at.take(10).split("-")
-            "${parts[0]}년 ${parts[1].toInt()}월 ${parts[2].toInt()}일"
+        val kst = ZoneId.of("Asia/Seoul")
+        val timeFmt = DateTimeFormatter.ofPattern("HH:mm")
+
+        // 돌봄 시간 표시 (start_time/end_time 있으면 우선 표시)
+        val careTimeText = try {
+            if (item.start_time != null && item.end_time != null) {
+                val start = OffsetDateTime.parse(item.start_time).atZoneSameInstant(kst).format(timeFmt)
+                val end   = OffsetDateTime.parse(item.end_time).atZoneSameInstant(kst).format(timeFmt)
+                val date  = OffsetDateTime.parse(item.start_time).atZoneSameInstant(kst)
+                "${date.year}년 ${date.monthValue}월 ${date.dayOfMonth}일  $start ~ $end"
+            } else {
+                val parts = item.reserved_at.take(10).split("-")
+                "${parts[0]}년 ${parts[1].toInt()}월 ${parts[2].toInt()}일"
+            }
         } catch (e: Exception) {
             item.reserved_at.take(10)
         }
-        holder.tvReservedAt.text = "신청일: $dateFormatted"
+        holder.tvReservedAt.text = careTimeText
 
         holder.tvStatus.text = item.status
         val badgeColor = when (item.status) {

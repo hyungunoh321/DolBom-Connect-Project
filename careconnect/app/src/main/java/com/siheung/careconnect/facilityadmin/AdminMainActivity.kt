@@ -8,11 +8,14 @@ import com.siheung.careconnect.databinding.ActivityAdminMainBinding
 class AdminMainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAdminMainBinding
+    private var facilityId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        facilityId = intent.getStringExtra("facility_id") ?: ""
 
         setupToolbar()
         setupMenuCards()
@@ -26,13 +29,19 @@ class AdminMainActivity : AppCompatActivity() {
     // ── 3개 메뉴 카드 클릭 이벤트 ────────────────────────────
     private fun setupMenuCards() {
         binding.cardSchedule.setOnClickListener {
-            startActivity(Intent(this, AdminScheduleActivity::class.java))
+            startActivity(Intent(this, AdminScheduleActivity::class.java).apply {
+                putExtra("facility_id", facilityId)
+            })
         }
         binding.cardReservation.setOnClickListener {
-            startActivity(Intent(this, AdminReservationActivity::class.java))
+            startActivity(Intent(this, AdminReservationActivity::class.java).apply {
+                putExtra("facility_id", facilityId)
+            })
         }
         binding.cardNotification.setOnClickListener {
-            startActivity(Intent(this, AdminNotificationActivity::class.java))
+            startActivity(Intent(this, AdminNotificationActivity::class.java).apply {
+                putExtra("facility_id", facilityId)
+            })
         }
     }
 }

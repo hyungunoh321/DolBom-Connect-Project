@@ -106,7 +106,6 @@ class TermsAgreementFragment : Fragment() {
                     put("parent_id", userId)
                     put("name", fd.childName)
                     put("birth_date", fd.childBirthDate)
-                    put("gender", fd.childGender)
                 }
             )
         }

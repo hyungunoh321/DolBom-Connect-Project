@@ -10,6 +10,8 @@ data class ReservationItem(
     val child_id: String? = null,
     val reserved_at: String,
     val status: String,
+    val start_time: String? = null,
+    val end_time: String? = null,
     val facilities: FacilityRef? = null,
     val children: ChildRef? = null
 )
