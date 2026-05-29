@@ -1,10 +1,16 @@
 package com.siheung.careconnect.facilityadmin
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import android.content.Intent
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.siheung.careconnect.MyFirebaseMessagingService
 import com.siheung.careconnect.databinding.ActivityAdminMainBinding
 import com.siheung.careconnect.login.LoginActivity
 import com.siheung.careconnect.login.SupabaseClientProvider
@@ -17,6 +23,9 @@ class AdminMainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAdminMainBinding
     private var facilityId: String = ""
 
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminMainBinding.inflate(layoutInflater)
@@ -24,8 +33,20 @@ class AdminMainActivity : AppCompatActivity() {
 
         facilityId = intent.getStringExtra("facility_id") ?: ""
 
+        requestNotificationPermissionIfNeeded()
+        MyFirebaseMessagingService.createNotificationChannel(this)
+
         setupToolbar()
         setupMenuCards()
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     // ── 툴바 ──────────────────────────────────────────────────
