@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.siheung.careconnect.databinding.ActivityLoginBinding
 import com.siheung.careconnect.facilityadmin.AdminMainActivity
+import com.siheung.careconnect.main.AppSessionState
 import com.siheung.careconnect.main.MainActivity
 import com.siheung.careconnect.systemadmin.SystemAdminActivity
 import io.github.jan.supabase.auth.auth
@@ -99,6 +100,7 @@ class LoginActivity : AppCompatActivity() {
                                 return@launch
                             }
 
+                            AppSessionState.isAuthenticatedInCurrentProcess = true
                             Toast.makeText(this@LoginActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
 
                             // FCM 토큰 DB 저장
