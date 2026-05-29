@@ -18,9 +18,28 @@ import kotlinx.serialization.json.put
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
+    companion object {
+        const val CHANNEL_ID = "careconnect_channel"
+
+        fun createNotificationChannel(context: Context) {
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            if (manager.getNotificationChannel(CHANNEL_ID) == null) {
+                manager.createNotificationChannel(
+                    NotificationChannel(CHANNEL_ID, "CareConnect 알림", NotificationManager.IMPORTANCE_HIGH)
+                )
+            }
+        }
+    }
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        val title = remoteMessage.notification?.title ?: "알림"
-        val body = remoteMessage.notification?.body ?: ""
+        // notification 페이로드 (앱 포그라운드 상태일 때)
+        val title = remoteMessage.notification?.title
+            ?: remoteMessage.data["title"]
+            ?: "알림"
+        val body = remoteMessage.notification?.body
+            ?: remoteMessage.data["body"]
+            ?: ""
+
         showNotification(title, body)
     }
 
@@ -39,22 +58,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     private fun showNotification(title: String, body: String) {
-        val channelId = "careconnect_channel"
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        createNotificationChannel(this)
 
-        val channel = NotificationChannel(
-            channelId, "CareConnect 알림",
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        manager.createNotificationChannel(channel)
-
-        val notification = NotificationCompat.Builder(this, channelId)
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(body)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setAutoCancel(true)
             .build()
 
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
     }
 }
