@@ -31,4 +31,9 @@
         android:icon="@drawable/ic_notification"
         android:title="실시간 정보" />
 
+    <item
+        android:id="@+id/nav_mypage"
+        android:icon="@drawable/ic_person"
+        android:title="마이페이지" />
+
 </menu>
