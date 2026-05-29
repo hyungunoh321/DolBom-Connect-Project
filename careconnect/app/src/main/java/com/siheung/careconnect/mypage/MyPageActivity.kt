@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import com.siheung.careconnect.databinding.ActivityMyPageBinding
 import com.siheung.careconnect.login.LoginActivity
 import com.siheung.careconnect.login.SupabaseClientProvider
+import com.siheung.careconnect.main.AppSessionState
 import com.siheung.careconnect.main.MainActivity
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
@@ -33,7 +34,9 @@ class MyPageActivity : AppCompatActivity() {
         binding.btnSaveChild.setOnClickListener { saveChildInfo() }
         binding.btnLogout.setOnClickListener { logout() }
 
-        if (SupabaseClientProvider.client.auth.currentUserOrNull() == null) {
+        if (!AppSessionState.isAuthenticatedInCurrentProcess ||
+            SupabaseClientProvider.client.auth.currentUserOrNull() == null
+        ) {
             Toast.makeText(this, "로그인 해주세요", Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -164,6 +167,7 @@ class MyPageActivity : AppCompatActivity() {
 
     private fun logout() {
         lifecycleScope.launch {
+            AppSessionState.isAuthenticatedInCurrentProcess = false
             runCatching { SupabaseClientProvider.client.auth.signOut() }
             Toast.makeText(this@MyPageActivity, "로그아웃되었습니다.", Toast.LENGTH_SHORT).show()
             val intent = Intent(this@MyPageActivity, MainActivity::class.java).apply {

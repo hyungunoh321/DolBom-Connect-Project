@@ -1,11 +1,14 @@
 package com.siheung.careconnect.benefits
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -16,64 +19,68 @@ import com.google.android.material.chip.Chip
 import com.siheung.careconnect.R
 import com.siheung.careconnect.databinding.ActivityBenefitsBinding
 import com.siheung.careconnect.login.SupabaseClientProvider
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
+import java.time.LocalDate
+import java.time.Period
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 class BenefitsActivity : AppCompatActivity() {
 
+    private companion object {
+        const val BOKJIRO_APPLY_URL = "https://www.bokjiro.go.kr/ssis-tbu/index.do"
+    }
+
     private lateinit var binding: ActivityBenefitsBinding
     private lateinit var adapter: PolicyAdapter
     private var selectedFilter = "전체"
     private var allPolicies: List<PolicyItem> = emptyList()
 
-    // ── 사용자 조건 (Intent로 전달받음) ──────────────────────
-    // TODO: 로그인 연동 완료 후 Supabase children/users 테이블에서 실제 데이터로 교체
     private var childCount: Int = 1
-    private var childAgeMonths: Int = 24  // 첫째 자녀 나이(개월)
-    private var incomeLevel: Int = 5       // 소득분위 1~10
+    private var childAgeMonths: Int = 24
+    private var incomeLevel: Int = 5
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBenefitsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Intent에서 사용자 조건 받기 (없으면 목데이터 기본값 사용)
-        childCount     = intent.getIntExtra("child_count", 1)
+        childCount = intent.getIntExtra("child_count", 1)
         childAgeMonths = intent.getIntExtra("child_age_months", 24)
-        incomeLevel    = intent.getIntExtra("income_level", 5)
+        incomeLevel = intent.getIntExtra("income_level", 5)
 
         setupToolbar()
         setupConditionBadge()
         setupRecyclerView()
         setupFilterChips(listOf("전체"))
         updateList("전체")
+        loadUserCondition()
         loadPolicies()
     }
 
-    // ── 툴바 (뒤로가기) ───────────────────────────────────────
     private fun setupToolbar() {
         binding.btnBack.setOnClickListener { finish() }
     }
 
-    // ── 상단 조건 배지 ─────────────────────────────────────────
     private fun setupConditionBadge() {
         val ageText = when {
-            childAgeMonths < 12  -> "${childAgeMonths}개월"
-            childAgeMonths < 24  -> "1세"
-            childAgeMonths < 36  -> "2세"
-            childAgeMonths < 48  -> "3세"
-            childAgeMonths < 60  -> "4세"
-            childAgeMonths < 72  -> "5세"
-            childAgeMonths < 84  -> "6세"
-            childAgeMonths < 96  -> "7세"
-            else                 -> "${childAgeMonths / 12}세"
+            childAgeMonths < 12 -> "${childAgeMonths}개월"
+            childAgeMonths < 24 -> "1세"
+            childAgeMonths < 36 -> "2세"
+            childAgeMonths < 48 -> "3세"
+            childAgeMonths < 60 -> "4세"
+            childAgeMonths < 72 -> "5세"
+            childAgeMonths < 84 -> "6세"
+            childAgeMonths < 96 -> "7세"
+            else -> "${childAgeMonths / 12}세"
         }
-        binding.tvResultCount.text = "자녀 ${childCount}명 · ${ageText} · 소득분위 ${incomeLevel}"
+        binding.tvResultCount.text = "자녀 ${childCount}명 · $ageText · 소득분위 $incomeLevel"
+        binding.tvConditionBadge.text = "자녀 ${childCount}명 · 소득분위 $incomeLevel"
     }
 
-    // ── 필터 칩 ───────────────────────────────────────────────
     private fun setupFilterChips(filters: List<String>) {
         binding.chipGroupFilter.removeAllViews()
         filters.forEach { filter ->
@@ -116,70 +123,52 @@ class BenefitsActivity : AppCompatActivity() {
         }
     }
 
-    // ── RecyclerView ──────────────────────────────────────────
     private fun setupRecyclerView() {
         adapter = PolicyAdapter { item -> showDetailBottomSheet(item) }
         binding.rvBenefits.layoutManager = LinearLayoutManager(this)
         binding.rvBenefits.adapter = adapter
     }
 
-    // ── 필터링 + 목록 업데이트 ────────────────────────────────
     private fun updateList(filter: String) {
-        val categoryFiltered = if (filter == "전체") allPolicies
-        else allPolicies.filter { it.category == filter }
-
-        // 사용자 조건(나이/소득분위) 기반 필터링
+        val categoryFiltered = if (filter == "전체") {
+            allPolicies
+        } else {
+            allPolicies.filter { it.category == filter }
+        }
         val conditionFiltered = categoryFiltered.filter { matchesCondition(it) }
 
         adapter.submitList(conditionFiltered)
         binding.tvResultCount.text = "총 ${conditionFiltered.size}개"
     }
 
-    // ── 조건 매칭 로직 ────────────────────────────────────────
-    // target, tags 텍스트를 기반으로 사용자 조건과 비교
     private fun matchesCondition(policy: PolicyItem): Boolean {
         val combined = (policy.target + " " + policy.tags.joinToString(" ")).lowercase()
 
-        // ① 소득분위 조건
         val incomeMatch = when {
             combined.contains("소득무관") || combined.contains("전체") -> true
             combined.contains("차상위") -> incomeLevel <= 2
             combined.contains("기초") -> incomeLevel == 1
             else -> {
-                val regex = Regex("소득분위\\s*(\\d+)\\s*이하")
-                val match = regex.find(combined)
-                if (match != null) incomeLevel <= (match.groupValues[1].toIntOrNull() ?: 10)
-                else true
+                val match = Regex("소득분위\\s*(\\d+)\\s*이하").find(combined)
+                if (match != null) incomeLevel <= (match.groupValues[1].toIntOrNull() ?: 10) else true
             }
         }
 
-        // ② 자녀 나이(개월) 조건
         val ageMatch = when {
-            combined.contains("0~11개월") || combined.contains("0세(0~11개월)") || combined.contains("만 0세") ->
-                childAgeMonths in 0..11
-            combined.contains("12~23개월") || combined.contains("1세(12~23개월)") || combined.contains("만 1세") ->
-                childAgeMonths in 12..23
-            combined.contains("24~35개월") || combined.contains("2세") ->
-                childAgeMonths in 24..35
-            combined.contains("36~83개월") || combined.contains("3~5세") ->
-                childAgeMonths in 36..83
-            combined.contains("24~86개월") ->
-                childAgeMonths in 24..86
-            combined.contains("만 8세 미만") || combined.contains("0-8세") ->
-                childAgeMonths < 96
-            combined.contains("만 12세") ->
-                childAgeMonths < 144
-            combined.contains("0~1세") ->
-                childAgeMonths < 24
-            combined.contains("0세~11개월") ->
-                childAgeMonths in 0..11
-            else -> true  // 나이 조건 명시 없으면 통과
+            combined.contains("0~11개월") || combined.contains("만 0세") -> childAgeMonths in 0..11
+            combined.contains("12~23개월") || combined.contains("만 1세") -> childAgeMonths in 12..23
+            combined.contains("24~35개월") || combined.contains("2세") -> childAgeMonths in 24..35
+            combined.contains("36~83개월") || combined.contains("3~5세") -> childAgeMonths in 36..83
+            combined.contains("24~86개월") -> childAgeMonths in 24..86
+            combined.contains("만 8세 미만") || combined.contains("0-8세") -> childAgeMonths < 96
+            combined.contains("만 12세") -> childAgeMonths < 144
+            combined.contains("0~1세") -> childAgeMonths < 24
+            else -> true
         }
 
         return incomeMatch && ageMatch
     }
 
-    // ── Supabase: policies 테이블 조회 ────────────────────────
     private fun loadPolicies() {
         lifecycleScope.launch {
             binding.tvResultCount.text = "불러오는 중..."
@@ -192,17 +181,43 @@ class BenefitsActivity : AppCompatActivity() {
                 selectedFilter = "전체"
                 setupFilterChips(buildFilters(allPolicies))
                 updateList(selectedFilter)
-
             } catch (e: Exception) {
                 Log.e("BenefitsActivity", "Failed to load policies from Supabase", e)
                 allPolicies = emptyList()
                 setupFilterChips(listOf("전체"))
                 updateList(selectedFilter)
-                android.widget.Toast.makeText(
+                Toast.makeText(
                     this@BenefitsActivity,
                     "정책 정보를 불러오지 못했습니다.",
-                    android.widget.Toast.LENGTH_SHORT
+                    Toast.LENGTH_SHORT
                 ).show()
+            }
+        }
+    }
+
+    private fun loadUserCondition() {
+        val userId = SupabaseClientProvider.client.auth.currentUserOrNull()?.id ?: return
+
+        lifecycleScope.launch {
+            val children = try {
+                SupabaseClientProvider.client
+                    .postgrest["children"]
+                    .select(Columns.raw("parent_id,birth_date,income_level")) {
+                        filter {
+                            eq("parent_id", userId)
+                        }
+                    }
+                    .decodeList<BenefitChildRow>()
+            } catch (e: Exception) {
+                emptyList()
+            }
+
+            if (children.isNotEmpty()) {
+                childCount = children.size
+                childAgeMonths = children.mapNotNull { it.ageMonths() }.minOrNull() ?: childAgeMonths
+                incomeLevel = children.mapNotNull { it.incomeLevel }.minOrNull() ?: incomeLevel
+                setupConditionBadge()
+                updateList(selectedFilter)
             }
         }
     }
@@ -215,7 +230,6 @@ class BenefitsActivity : AppCompatActivity() {
         return listOf("전체") + categories
     }
 
-    // ── 상세 BottomSheet ──────────────────────────────────────
     private fun showDetailBottomSheet(item: PolicyItem) {
         val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_benefit_detail, null)
@@ -232,15 +246,60 @@ class BenefitsActivity : AppCompatActivity() {
             if (item.documents.isEmpty()) "필요 서류 없음"
             else item.documents.joinToString("\n") { "· $it" }
 
-        view.findViewById<View>(R.id.btnApply).setOnClickListener {
-            dialog.dismiss()
+        val applyUrl = item.resolveApplyUrl()
+        val btnApply = view.findViewById<View>(R.id.btnApply)
+        btnApply.visibility = if (item.isVisitOnlyApplication()) View.GONE else View.VISIBLE
+        btnApply.setOnClickListener {
+            if (applyUrl.isBlank()) {
+                Toast.makeText(this, "신청 링크가 등록되지 않았습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(applyUrl.withHttpScheme())))
+                dialog.dismiss()
+            }
         }
 
         dialog.show()
     }
+
+    private fun PolicyItem.isVisitOnlyApplication(): Boolean {
+        val method = howToApply.lowercase()
+        val hasVisit = method.contains("방문")
+        val hasNonVisitMethod = listOf("온라인", "인터넷", "홈페이지", "웹", "전화", "팩스", "우편", "모바일")
+            .any { method.contains(it) }
+
+        return hasVisit && !hasNonVisitMethod
+    }
+
+    private fun PolicyItem.resolveApplyUrl(): String {
+        if (howToApply.contains("복지로")) return BOKJIRO_APPLY_URL
+        return applyUrl.ifBlank { howToApply.extractFirstUrl() }
+    }
+
+    private fun String.extractFirstUrl(): String {
+        val urlRegex = Regex("""https?://[^\s,]+|www\.[^\s,]+""")
+        return urlRegex.find(this)?.value.orEmpty()
+    }
+
+    private fun String.withHttpScheme(): String =
+        if (startsWith("http://") || startsWith("https://")) this else "https://$this"
 }
 
-// ── 데이터 모델 ────────────────────────────────────────────────
+@Serializable
+data class BenefitChildRow(
+    @SerialName("parent_id")
+    val parentId: String = "",
+    @SerialName("birth_date")
+    val birthDate: String = "",
+    @SerialName("income_level")
+    val incomeLevel: Int? = null
+) {
+    fun ageMonths(): Int? = runCatching {
+        val birth = LocalDate.parse(birthDate.take(10))
+        val period = Period.between(birth, LocalDate.now())
+        period.years * 12 + period.months
+    }.getOrNull()
+}
+
 data class PolicyItem(
     val id: Long,
     val title: String,
@@ -251,6 +310,7 @@ data class PolicyItem(
     val target: String,
     val period: String,
     val howToApply: String,
+    val applyUrl: String,
     val documents: List<String>,
     val isRecommended: Boolean
 )
@@ -267,26 +327,48 @@ data class PolicyRow(
     val period: String = "",
     @SerialName("howToApply")
     val howToApply: String = "",
+    @SerialName("howtoapply")
+    val howToApplyLower: String = "",
+    @SerialName("how_to_apply")
+    val howToApplySnake: String = "",
+    @SerialName("apply_method")
+    val applyMethod: String = "",
+    @SerialName("application_method")
+    val applicationMethod: String = "",
+    @SerialName("applyUrl")
+    val applyUrl: String = "",
+    @SerialName("apply_url")
+    val applyUrlSnake: String = "",
+    @SerialName("url")
+    val url: String = "",
+    @SerialName("homepageUrl")
+    val homepageUrl: String = "",
+    @SerialName("homepage_url")
+    val homepageUrlSnake: String = "",
     val documents: List<String> = emptyList(),
     @SerialName("is_recommended")
     val isRecommended: Boolean = false
 ) {
     fun toPolicyItem() = PolicyItem(
-        id            = id,
-        title         = title,
-        amount        = amount,
-        category      = category,
-        tags          = tags,
-        description   = description,
-        target        = target,
-        period        = period,
-        howToApply    = howToApply,
-        documents     = documents,
+        id = id,
+        title = title,
+        amount = amount,
+        category = category,
+        tags = tags,
+        description = description,
+        target = target,
+        period = period,
+        howToApply = listOf(howToApply, howToApplyLower, howToApplySnake, applyMethod, applicationMethod)
+            .firstOrNull { it.isNotBlank() }
+            .orEmpty(),
+        applyUrl = listOf(applyUrl, applyUrlSnake, url, homepageUrl, homepageUrlSnake)
+            .firstOrNull { it.isNotBlank() }
+            .orEmpty(),
+        documents = documents,
         isRecommended = isRecommended
     )
 }
 
-// ── RecyclerView 어댑터 ────────────────────────────────────────
 class PolicyAdapter(
     private val onItemClick: (PolicyItem) -> Unit
 ) : RecyclerView.Adapter<PolicyAdapter.ViewHolder>() {
@@ -321,14 +403,13 @@ class PolicyAdapter(
             tvTitle.text = item.title
             tvAmount.text = item.amount
 
-            tvTag1.text = item.tags.getOrNull(0) ?: ""
+            tvTag1.text = item.tags.getOrNull(0).orEmpty()
             tvTag1.visibility = if (item.tags.isNotEmpty()) View.VISIBLE else View.GONE
 
-            tvTag2.text = item.tags.getOrNull(1) ?: ""
+            tvTag2.text = item.tags.getOrNull(1).orEmpty()
             tvTag2.visibility = if (item.tags.size > 1) View.VISIBLE else View.GONE
 
             tvRecommended.visibility = if (item.isRecommended) View.VISIBLE else View.GONE
-
             itemView.setOnClickListener { onItemClick(item) }
         }
     }
