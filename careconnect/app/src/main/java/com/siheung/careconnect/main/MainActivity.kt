@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity() {
                     childCount = children.size,
                     incomeLevel = children.mapNotNull { it.incomeLevel }.minOrNull()
                 )
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
 
@@ -231,9 +231,9 @@ private data class MainUserSummary(
 }
 
 @Serializable
-private data class MainUserRow(val username: String = "")
+internal data class MainUserRow(val username: String = "")
 
 @Serializable
-private data class MainChildRow(
+internal data class MainChildRow(
     @SerialName("income_level") val incomeLevel: Int? = null
 )
