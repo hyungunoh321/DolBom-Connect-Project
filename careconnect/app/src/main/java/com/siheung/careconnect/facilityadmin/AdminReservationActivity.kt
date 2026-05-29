@@ -224,7 +224,7 @@ private data class ChildRef(val name: String)
 private data class FacilityRef(val name: String)
 
 @Serializable
-private data class FcmTokenRow(
+internal data class FcmTokenRow(
     @SerialName("fcm_token") val fcmToken: String? = null
 )
 

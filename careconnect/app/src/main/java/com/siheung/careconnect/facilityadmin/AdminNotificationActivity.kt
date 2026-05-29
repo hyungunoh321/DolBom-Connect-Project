@@ -203,11 +203,6 @@ private data class ReservationChildRow(
 )
 
 @Serializable
-private data class FcmTokenRow(
-    @SerialName("fcm_token") val fcmToken: String? = null
-)
-
-@Serializable
 data class ChildNotifItem(
     val id: String,
     val name: String,
