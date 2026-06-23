@@ -266,9 +266,9 @@ GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
       <sub>FE (혜택·관리자)</sub>
     </td>
     <td align="center" width="25%">
-      <img src="https://github.com/eyes2.png" width="120" style="border-radius:50%"/><br/>
+      <img src="https://github.com/eyes25.png" width="120" style="border-radius:50%"/><br/>
       <b>김준서</b><br/>
-      <a href="https://github.com/eyes2">@eyes25</a><br/>
+      <a href="https://github.com/eyes25">@eyes25</a><br/>
       <sub>BE · 인프라 · 실시간</sub>
     </td>
     <td align="center" width="25%">
